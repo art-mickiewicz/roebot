@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"robpike.io/filter"
 
 	cmd "19u4n4/roebot/commands"
 	s "19u4n4/roebot/state"
@@ -31,6 +32,14 @@ func main() {
 		}
 		select {
 		case update := <-ch:
+			if update.EditedMessage != nil {
+				chatID := update.Message.Chat.ID
+				tpl := filter.Choose(s.Templates, func(x Template) bool {
+					return x != ""
+				}).([]Template)
+				hdl := cmd.SetTemplate{TemplateID: }
+				break
+			}
 			chatID := update.Message.Chat.ID
 			hdl := transition(update.Message)
 			// username := update.Message.From.UserName
@@ -55,15 +64,31 @@ func (sync synchronizer) start() {
 }
 
 func (sync synchronizer) pushTemplates() {
-	for _, tpl := range sync.templates {
+	for i, tpl := range sync.templates {
 		chName := "@" + tpl.TargetChannel
 		chat, err := sync.bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		msg := t.NewMessage(chat.ID, tpl.Text)
-		sync.bot.Send(msg)
+		if tpl.IsPosted() {
+			edit := t.EditMessageTextConfig{
+				BaseEdit: t.BaseEdit{
+					ChatID:    chat.ID,
+					MessageID: tpl.TargetMessageID,
+				},
+				Text: tpl.Text,
+			}
+			sync.bot.Send(edit)
+		} else {
+			msg := t.NewMessage(chat.ID, tpl.Text)
+			postedMsg, err := sync.bot.Send(msg)
+			if err == nil {
+				tpl.TargetMessageID = postedMsg.MessageID
+				sync.templates[i] = tpl
+				log.Println(sync.templates)
+			}
+		}
 	}
 }
 

@@ -7,3 +7,7 @@ type Template struct {
 	TargetMessageID int
 	Text            string
 }
+
+func (tpl Template) IsPosted() bool {
+	return tpl.TargetMessageID > 0
+}

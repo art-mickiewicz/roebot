@@ -2,6 +2,7 @@ package commands
 
 import (
 	s "19u4n4/roebot/state"
+	_ "log"
 	"strings"
 
 	"robpike.io/filter"
@@ -48,6 +49,7 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 type SetTemplate struct {
 	Message       *t.Message
 	TargetChannel string
+	TemplateID    int
 }
 
 func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) {
