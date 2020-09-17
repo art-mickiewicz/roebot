@@ -12,7 +12,6 @@ var schema = [...]string{
 	"CREATE TABLE IF NOT EXISTS templates (id INTEGER PRIMARY KEY, source_message_id INTEGER NULL, target_message_id INTEGER NULL, text TEXT NOT NULL)",
 }
 var Templates = make([]Template, 10)
-var Chats = make(map[string]Chat)
 
 func init() {
 	db, err := sql.Open("sqlite3", "db.sqlite")

@@ -24,31 +24,20 @@ func main() {
 		log.Panic(err)
 	}
 
-	commandMode := cmd.ModeZero
+	transition := cmd.DefaultTransition
+	sync := false
 	for {
-		if commandMode == cmd.ModeSync {
+		if sync {
 			sync := synchronizer{bot: bot, templates: s.Templates}
 			sync.start()
-			commandMode = cmd.ModeZero
 		}
 		select {
 		case update := <-ch:
 			chatID := update.Message.Chat.ID
-			var hdl cmd.Handler
-
+			hdl := transition(update.Message)
 			// username := update.Message.From.UserName
-			// text := update.Message.Text
-			// log.Printf("[%s] %d %s", username, chatID, text)
-
-			switch commandMode {
-			case cmd.ModeZero:
-				hdl = cmd.Zero{Message: update.Message}
-			case cmd.ModeSetTemplate:
-				hdl = cmd.SetTemplate{Message: update.Message}
-			}
-
-			newMode, reply := hdl.Handle()
-			commandMode = newMode
+			var reply string
+			transition, reply, sync = hdl.Handle()
 			if reply != "" {
 				msg := t.NewMessage(chatID, reply)
 				bot.Send(msg)
