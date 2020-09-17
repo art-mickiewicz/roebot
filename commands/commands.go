@@ -34,20 +34,6 @@ func (cmd Zero) Handle() (transitTo CommandMode, reply string) {
 	case "template":
 		transitTo = ModeSetTemplate
 		reply = "Жду шаблон объявления следующим сообщением."
-	case "join":
-		if len(args) != 1 || args[0][0] != '@' {
-			reply = "Не указано имя чата для подключения."
-			break
-		}
-		chName := args[0]
-		if _, ok := s.Chats[chName]; ok {
-			reply = "Кажется, я там уже был."
-			transitTo = ModeSync
-			break
-		}
-		reply = "Подключаюсь к " + chName
-		s.Chats[chName] = s.Chat{ID: 0, Name: chName}
-		transitTo = ModeSync
 	}
 	return
 }
