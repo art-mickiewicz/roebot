@@ -27,7 +27,7 @@ func NewTemplate(targetChannel string, srcPtr MessagePtr, text string) Template 
 func GetTemplateBySource(srcPtr MessagePtr) *Template {
 	for i, t := range Templates {
 		if t.SourceMessagePtr == srcPtr {
-			return &(Templates[i])
+			return &Templates[i]
 		}
 	}
 	return nil

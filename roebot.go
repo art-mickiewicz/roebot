@@ -26,8 +26,8 @@ func main() {
 	sync := false
 	for {
 		if sync {
-			sync := synchronizer{bot: bot, templates: s.Templates}
-			sync.start()
+			sr := synchronizer{bot: bot, templates: s.Templates}
+			sr.start()
 		}
 		select {
 		case update := <-ch:
@@ -35,9 +35,9 @@ func main() {
 				chatID := update.EditedMessage.Chat.ID
 				msgID := update.EditedMessage.MessageID
 				if tpl := s.GetTemplateBySource(s.MessagePtr{ChatID: chatID, MessageID: msgID}); tpl != nil {
-					tpl.Text = update.Message.Text
+					tpl.Text = update.EditedMessage.Text
+					sync = true
 				}
-				//hdl := cmd.SetTemplate{TemplateID: }
 				break
 			}
 			chatID := update.Message.Chat.ID
@@ -65,12 +65,6 @@ func (sync synchronizer) start() {
 
 func (sync synchronizer) pushTemplates() {
 	for i, tpl := range sync.templates {
-		chName := "@" + tpl.TargetChannel
-		chat, err := sync.bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
-		if err != nil {
-			log.Println(err)
-			continue
-		}
 		if tpl.IsPosted() {
 			edit := t.EditMessageTextConfig{
 				BaseEdit: t.BaseEdit{
@@ -81,12 +75,17 @@ func (sync synchronizer) pushTemplates() {
 			}
 			sync.bot.Send(edit)
 		} else {
+			chName := "@" + tpl.TargetChannel
+			chat, err := sync.bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 			msg := t.NewMessage(chat.ID, tpl.Text)
 			postedMsg, err := sync.bot.Send(msg)
 			if err == nil {
 				tpl.TargetMessagePtr = s.MessagePtr{ChatID: chat.ID, MessageID: postedMsg.MessageID}
 				sync.templates[i] = tpl
-				log.Println(sync.templates)
 			}
 		}
 	}
