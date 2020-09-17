@@ -30,6 +30,9 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 		return x != ""
 	}).([]string)
 	name, args := args[0], args[1:]
+	if name[0] == '/' {
+		name = name[1:]
+	}
 	switch name {
 	case "template":
 		if len(args) < 1 || args[0][0] != '@' {
@@ -41,7 +44,7 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 			return SetTemplate{Message: m, TargetChannel: chName}
 		}
 		reply = "Жду шаблон объявления следующим сообщением."
-	case "help":
+	case "help", "start":
 		if len(args) < 1 {
 			reply = GetHelp("")
 		} else {
