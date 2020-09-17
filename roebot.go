@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
-	"net/url"
 
 	cmd "19u4n4/roebot/commands"
 	s "19u4n4/roebot/state"
@@ -57,34 +55,16 @@ func (sync synchronizer) start() {
 }
 
 func (sync synchronizer) pushTemplates() {
-	chans, err := sync.getAdminedChannels()
-	if err != nil {
-		log.Println(err)
-		return
+	for _, tpl := range sync.templates {
+		chName := "@" + tpl.TargetChannel
+		chat, err := sync.bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		msg := t.NewMessage(chat.ID, tpl.Text)
+		sync.bot.Send(msg)
 	}
-	for _, ch := range chans {
-		log.Println(ch.UserName)
-	}
-
-	// for _, tpl := range sync.templates {
-
-	// }
-}
-
-func (sync synchronizer) getAdminedChannels() ([]t.Chat, error) {
-	log.Println("Getting admined channels!!!")
-	v := url.Values{}
-	resp, err := sync.bot.MakeRequest("c1hannels.getAdminedPublicChannels", v)
-	if err != nil {
-		return make([]t.Chat, 0), err
-	}
-	log.Println("Try print result")
-	log.Println(resp.Result)
-
-	var chats []t.Chat
-	err = json.Unmarshal(resp.Result, &chats)
-
-	return chats, err
 }
 
 func makeUpdateConfig(timeout int) t.UpdateConfig {
@@ -92,27 +72,3 @@ func makeUpdateConfig(timeout int) t.UpdateConfig {
 	cfg.Timeout = timeout
 	return cfg
 }
-
-// GetChatMember gets a specific chat member.
-// func (bot *BotAPI) GetChatMember(config ChatConfigWithUser) (ChatMember, error) {
-// 	v := url.Values{}
-
-// 	if config.SuperGroupUsername == "" {
-// 		v.Add("chat_id", strconv.FormatInt(config.ChatID, 10))
-// 	} else {
-// 		v.Add("chat_id", config.SuperGroupUsername)
-// 	}
-// 	v.Add("user_id", strconv.Itoa(config.UserID))
-
-// 	resp, err := bot.MakeRequest("getChatMember", v)
-// 	if err != nil {
-// 		return ChatMember{}, err
-// 	}
-
-// 	var member ChatMember
-// 	err = json.Unmarshal(resp.Result, &member)
-
-// 	bot.debugLog("getChatMember", v, member)
-
-// 	return member, err
-// }

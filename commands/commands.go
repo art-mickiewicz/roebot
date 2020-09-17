@@ -31,18 +31,27 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 	name, args := args[0], args[1:]
 	switch name {
 	case "template":
+		if len(args) < 1 || args[0][0] != '@' {
+			transitTo = DefaultTransition
+			reply = "Не указан канал для отправки шаблона первым аргументом к команде."
+			return
+		}
+		chName := args[0][1:]
 		transitTo = func(m *t.Message) Handler {
-			return SetTemplate{Message: m}
+			return SetTemplate{Message: m, TargetChannel: chName}
 		}
 		reply = "Жду шаблон объявления следующим сообщением."
 	}
 	return
 }
 
-type SetTemplate struct{ Message *t.Message }
+type SetTemplate struct {
+	Message       *t.Message
+	TargetChannel string
+}
 
 func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) {
-	tpl := s.Template{ID: 0, SourceMessageID: 0, TargetMessageID: 0, Text: ""}
+	tpl := s.Template{TargetChannel: cmd.TargetChannel, Text: cmd.Message.Text}
 	s.Templates = append(s.Templates, tpl)
 	transitTo = DefaultTransition
 	reply = "Шаблон установлен"
