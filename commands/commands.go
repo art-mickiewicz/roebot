@@ -33,7 +33,6 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 	switch name {
 	case "template":
 		if len(args) < 1 || args[0][0] != '@' {
-			transitTo = DefaultTransition
 			reply = "Не указан канал для отправки шаблона первым аргументом к команде."
 			return
 		}
@@ -42,6 +41,17 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 			return SetTemplate{Message: m, TargetChannel: chName}
 		}
 		reply = "Жду шаблон объявления следующим сообщением."
+	case "help":
+		if len(args) < 1 {
+			reply = GetHelp("")
+		} else {
+			help := GetHelp(args[0])
+			if help == "" {
+				reply = "Невозможно получить справку - команда не найдена."
+			} else {
+				reply = help
+			}
+		}
 	}
 	return
 }

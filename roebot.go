@@ -47,6 +47,7 @@ func main() {
 			transition, reply, sync = hdl.Handle()
 			if reply != "" {
 				msg := t.NewMessage(chatID, reply)
+				msg.ParseMode = "markdown"
 				bot.Send(msg)
 			}
 		}
