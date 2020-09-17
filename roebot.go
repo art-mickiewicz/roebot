@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"robpike.io/filter"
 
 	cmd "19u4n4/roebot/commands"
 	s "19u4n4/roebot/state"
@@ -33,11 +32,12 @@ func main() {
 		select {
 		case update := <-ch:
 			if update.EditedMessage != nil {
-				chatID := update.Message.Chat.ID
-				tpl := filter.Choose(s.Templates, func(x Template) bool {
-					return x != ""
-				}).([]Template)
-				hdl := cmd.SetTemplate{TemplateID: }
+				chatID := update.EditedMessage.Chat.ID
+				msgID := update.EditedMessage.MessageID
+				if tpl := s.GetTemplateBySource(s.MessagePtr{ChatID: chatID, MessageID: msgID}); tpl != nil {
+					tpl.Text = update.Message.Text
+				}
+				//hdl := cmd.SetTemplate{TemplateID: }
 				break
 			}
 			chatID := update.Message.Chat.ID
@@ -74,8 +74,8 @@ func (sync synchronizer) pushTemplates() {
 		if tpl.IsPosted() {
 			edit := t.EditMessageTextConfig{
 				BaseEdit: t.BaseEdit{
-					ChatID:    chat.ID,
-					MessageID: tpl.TargetMessageID,
+					ChatID:    tpl.TargetMessagePtr.ChatID,
+					MessageID: tpl.TargetMessagePtr.MessageID,
 				},
 				Text: tpl.Text,
 			}
@@ -84,7 +84,7 @@ func (sync synchronizer) pushTemplates() {
 			msg := t.NewMessage(chat.ID, tpl.Text)
 			postedMsg, err := sync.bot.Send(msg)
 			if err == nil {
-				tpl.TargetMessageID = postedMsg.MessageID
+				tpl.TargetMessagePtr = s.MessagePtr{ChatID: chat.ID, MessageID: postedMsg.MessageID}
 				sync.templates[i] = tpl
 				log.Println(sync.templates)
 			}

@@ -53,7 +53,8 @@ type SetTemplate struct {
 }
 
 func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) {
-	tpl := s.Template{TargetChannel: cmd.TargetChannel, Text: cmd.Message.Text}
+	srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
+	tpl := s.NewTemplate(cmd.TargetChannel, srcPtr, cmd.Message.Text)
 	s.Templates = append(s.Templates, tpl)
 	transitTo = DefaultTransition
 	reply = "Шаблон установлен"

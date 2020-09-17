@@ -13,6 +13,26 @@ var schema = [...]string{
 }
 var Templates = make([]Template, 0, 10)
 
+func NewTemplate(targetChannel string, srcPtr MessagePtr, text string) Template {
+	maxID := 0
+	for _, t := range Templates {
+		if t.ID > maxID {
+			maxID = t.ID
+		}
+	}
+	newID := maxID + 1
+	return Template{ID: newID, TargetChannel: targetChannel, SourceMessagePtr: srcPtr, Text: text}
+}
+
+func GetTemplateBySource(srcPtr MessagePtr) *Template {
+	for i, t := range Templates {
+		if t.SourceMessagePtr == srcPtr {
+			return &(Templates[i])
+		}
+	}
+	return nil
+}
+
 func init() {
 	db, err := sql.Open("sqlite3", "db.sqlite")
 	if err != nil {

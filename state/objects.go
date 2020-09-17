@@ -1,13 +1,18 @@
 package state
 
 type Template struct {
-	ID              int
-	TargetChannel   string
-	SourceMessageID int
-	TargetMessageID int
-	Text            string
+	ID               int
+	TargetChannel    string
+	SourceMessagePtr MessagePtr
+	TargetMessagePtr MessagePtr
+	Text             string
+}
+
+type MessagePtr struct {
+	ChatID    int64
+	MessageID int
 }
 
 func (tpl Template) IsPosted() bool {
-	return tpl.TargetMessageID > 0
+	return tpl.TargetMessagePtr.MessageID > 0
 }
