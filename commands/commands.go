@@ -55,26 +55,24 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 			}
 			transitTo, reply = cmdTemplateAdd(args[0][1:])
 		case "edit":
-			if len(args) < 1 || args[0][0] != '@' {
+			if len(args) < 1 {
 				reply = "Не указан ID шаблона для редактирования первым аргументом к команде \"template edit\"."
 				return
 			}
-			if chID, ok := strconv.Atoi(args[0][1:]); ok != nil {
+			if chID, err := strconv.Atoi(args[0]); err == nil {
 				transitTo, reply = cmdTemplateEdit(chID)
 			} else {
 				reply = "Неверный тип аргумента ID шаблона."
-				return
 			}
 		case "delete":
 			if len(args) < 1 {
 				reply = "Не указан ID шаблона для редактирования первым аргументом к команде \"template delete\"."
 				return
 			}
-			if chID, ok := strconv.Atoi(args[0]); ok != nil {
-				reply = "Неверный тип аргумента ID шаблона."
-				return
-			} else {
+			if chID, err := strconv.Atoi(args[0]); err == nil {
 				reply = cmdTemplateDelete(chID)
+			} else {
+				reply = "Неверный тип аргумента ID шаблона."
 			}
 		}
 	case "help", "start":
@@ -106,12 +104,23 @@ type SetTemplate struct {
 }
 
 func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) {
-	srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
-	tpl := s.NewTemplate(cmd.TargetChannel, srcPtr, cmd.Message.Text)
-	s.Templates = append(s.Templates, tpl)
 	transitTo = DefaultTransition
-	reply = "Шаблон установлен"
-	sync = true
+	sync = false
+	if cmd.TemplateID > 0 {
+		if tpl := s.GetTemplateByID(cmd.TemplateID); tpl != nil {
+			tpl.Text = cmd.Message.Text
+			reply = "Шаблон установлен"
+			sync = true
+		} else {
+			reply = "Шаблона с таким ID не найдено."
+		}
+	} else {
+		srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
+		tpl := s.NewTemplate(cmd.TargetChannel, srcPtr, cmd.Message.Text)
+		s.Templates = append(s.Templates, tpl)
+		reply = "Шаблон установлен"
+		sync = true
+	}
 	return
 }
 
@@ -162,6 +171,6 @@ func cmdTemplateDelete(templateID int) string {
 	if deleted > 0 {
 		return "Удалено."
 	} else {
-		return "Шаблонов с таким ID не найдено."
+		return "Шаблона с таким ID не найдено."
 	}
 }

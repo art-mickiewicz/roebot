@@ -34,6 +34,15 @@ func GetTemplateBySource(srcPtr MessagePtr) *Template {
 	return nil
 }
 
+func GetTemplateByID(id int) *Template {
+	for i, t := range Templates {
+		if t.ID == id {
+			return &Templates[i]
+		}
+	}
+	return nil
+}
+
 func DeleteTemplateByID(id int) int {
 	was := len(Templates)
 	Templates = filter.Choose(Templates, func(t Template) bool {
