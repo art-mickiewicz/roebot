@@ -6,7 +6,7 @@ var Help = map[string]string{
 	"help [COMMAND]": "help - список команд",
 	"template":       "template { list | add | edit | delete } - работа с шаблонами",
 	"variables":      "variables - список переменных для шаблона",
-	"messages":       "messages CHANNEL - краткая сводка сообщений канала с их ID",
+	//"messages":       "messages CHANNEL - краткая сводка сообщений канала с их ID",
 }
 
 var FullHelp = map[string]string{

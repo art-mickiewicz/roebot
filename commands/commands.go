@@ -14,24 +14,8 @@ import (
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-type Replier interface {
-	Reply(bot *t.BotAPI) string
-}
-
-type str string
-
-func (s str) Reply(bot *t.BotAPI) string {
-	return string(s)
-}
-
-type Transition func(*t.Message) Handler
-
 var DefaultTransition = func(m *t.Message) Handler {
 	return Zero{Message: m}
-}
-
-type Handler interface {
-	Handle() (transitTo Transition, r Replier, sync bool)
 }
 
 type Zero struct{ Message *t.Message }
@@ -110,7 +94,12 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 			r = str(fmt.Sprintln("```") + reply + fmt.Sprintln("```"))
 		}
 	case "messages":
-
+		if len(args) < 1 || args[0][0] != '@' {
+			r = str("Не указан канал первым аргументом к команде \"messages\".")
+			return
+		}
+		chName := args[0][1:]
+		r = cmdMessages(chName)
 	}
 	return
 }
@@ -195,4 +184,17 @@ func cmdTemplateDelete(templateID int) str {
 	} else {
 		return "Шаблона с таким ID не найдено."
 	}
+}
+
+func cmdMessages(chName string) Replier {
+	var f funcReplier
+	f = func(bot *t.BotAPI) string {
+		name := "@" + chName
+		_, err := bot.GetChat(t.ChatConfig{SuperGroupUsername: name})
+		if err != nil {
+			return "Канал недоступен."
+		}
+		return ""
+	}
+	return f
 }
