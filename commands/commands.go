@@ -1,7 +1,9 @@
 package commands
 
 import (
+	srv "19u4n4/roebot/services"
 	s "19u4n4/roebot/state"
+	"fmt"
 	_ "log"
 	"strings"
 
@@ -54,6 +56,13 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 			} else {
 				reply = help
 			}
+		}
+	case "variables":
+		for k, _ := range srv.GetVariablesInfo() {
+			reply += fmt.Sprintln(fmt.Sprintf("%s", k))
+		}
+		if len(reply) > 0 {
+			reply = fmt.Sprintln("```") + reply + fmt.Sprintln("```")
 		}
 	}
 	return

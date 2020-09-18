@@ -1,3 +1,29 @@
 package services
 
-var Variables = make(map[string]string)
+var variables = make(map[string]Variable)
+
+type Variable struct {
+	Name        string
+	Value       string
+	Description string
+}
+
+func RegisterVariable(name string, description string) {
+	variables[name] = Variable{Name: name, Description: description}
+}
+
+func GetVariablesInfo() map[string]string {
+	info := make(map[string]string)
+	for k, v := range variables {
+		info[k] = v.Description
+	}
+	return info
+}
+
+func GetValue(k string) string {
+	if v, ok := variables[k]; ok {
+		return v.Value
+	} else {
+		return ""
+	}
+}
