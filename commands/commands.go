@@ -14,6 +14,16 @@ import (
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+type Replier interface {
+	Reply(bot *t.BotAPI) string
+}
+
+type str string
+
+func (s str) Reply(bot *t.BotAPI) string {
+	return string(s)
+}
+
 type Transition func(*t.Message) Handler
 
 var DefaultTransition = func(m *t.Message) Handler {
@@ -21,14 +31,14 @@ var DefaultTransition = func(m *t.Message) Handler {
 }
 
 type Handler interface {
-	Handle() (transitTo Transition, reply string, sync bool)
+	Handle() (transitTo Transition, r Replier, sync bool)
 }
 
 type Zero struct{ Message *t.Message }
 
-func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
+func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 	transitTo = DefaultTransition
-	reply = ""
+	r = str("")
 	sync = false
 	args := filter.Choose(strings.Split(cmd.Message.Text, " "), func(x string) bool {
 		return x != ""
@@ -40,17 +50,17 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 	switch name {
 	case "template":
 		if len(args) < 1 {
-			reply = "Не указана субкоманда: { list | add | edit | delete }"
+			r = str("Не указана субкоманда: { list | add | edit | delete }")
 			return
 		}
 		subcmd := args[0]
 		args = args[1:]
 		switch subcmd {
 		case "list":
-			reply = cmdTemplateList()
+			r = cmdTemplateList()
 		case "add":
 			if len(args) < 1 || args[0][0] != '@' {
-				reply = "Не указан канал для отправки шаблона первым аргументом к команде \"template add\"."
+				r = str("Не указан канал для отправки шаблона первым аргументом к команде \"template add\".")
 				return
 			}
 			chName := args[0][1:]
@@ -58,46 +68,49 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 			if len(args) > 1 {
 				msgID, _ = strconv.Atoi(args[1])
 			}
-			transitTo, reply = cmdTemplateAdd(chName, msgID)
+			transitTo, r = cmdTemplateAdd(chName, msgID)
 		case "edit":
 			if len(args) < 1 {
-				reply = "Не указан ID шаблона для редактирования первым аргументом к команде \"template edit\"."
+				r = str("Не указан ID шаблона для редактирования первым аргументом к команде \"template edit\".")
 				return
 			}
 			if chID, err := strconv.Atoi(args[0]); err == nil {
-				transitTo, reply = cmdTemplateEdit(chID)
+				transitTo, r = cmdTemplateEdit(chID)
 			} else {
-				reply = "Неверный тип аргумента ID шаблона."
+				r = str("Неверный тип аргумента ID шаблона.")
 			}
 		case "delete":
 			if len(args) < 1 {
-				reply = "Не указан ID шаблона для редактирования первым аргументом к команде \"template delete\"."
+				r = str("Не указан ID шаблона для редактирования первым аргументом к команде \"template delete\".")
 				return
 			}
 			if chID, err := strconv.Atoi(args[0]); err == nil {
-				reply = cmdTemplateDelete(chID)
+				r = cmdTemplateDelete(chID)
 			} else {
-				reply = "Неверный тип аргумента ID шаблона."
+				r = str("Неверный тип аргумента ID шаблона.")
 			}
 		}
 	case "help", "start":
 		if len(args) < 1 {
-			reply = GetHelp("")
+			r = GetHelp("")
 		} else {
 			help := GetHelp(args[0])
 			if help == "" {
-				reply = "Невозможно получить справку - команда не найдена."
+				r = str("Невозможно получить справку - команда не найдена.")
 			} else {
-				reply = help
+				r = help
 			}
 		}
 	case "variables":
+		var reply string
 		for k, _ := range srv.GetVariablesInfo() {
 			reply += fmt.Sprintln(fmt.Sprintf("%s", k))
 		}
 		if len(reply) > 0 {
-			reply = fmt.Sprintln("```") + reply + fmt.Sprintln("```")
+			r = str(fmt.Sprintln("```") + reply + fmt.Sprintln("```"))
 		}
+	case "messages":
+
 	}
 	return
 }
@@ -109,16 +122,16 @@ type SetTemplate struct {
 	MessageID     int
 }
 
-func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) {
+func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 	transitTo = DefaultTransition
 	sync = false
 	if cmd.TemplateID > 0 {
 		if tpl := s.GetTemplateByID(cmd.TemplateID); tpl != nil {
 			tpl.Text = cmd.Message.Text
-			reply = "Шаблон установлен"
+			r = str("Шаблон установлен")
 			sync = true
 		} else {
-			reply = "Шаблона с таким ID не найдено."
+			r = str("Шаблона с таким ID не найдено.")
 		}
 	} else {
 		srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
@@ -127,7 +140,7 @@ func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) 
 			tpl.TargetMessagePtr = s.MessagePtr{ChatID: 0, MessageID: cmd.MessageID}
 		}
 		s.Templates = append(s.Templates, tpl)
-		reply = "Шаблон установлен"
+		r = str("Шаблон установлен")
 		sync = true
 	}
 	return
@@ -135,7 +148,7 @@ func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) 
 
 /* Template commands */
 
-func cmdTemplateList() string {
+func cmdTemplateList() str {
 	if len(s.Templates) == 0 {
 		return "Список шаблонов пуст."
 	}
@@ -156,10 +169,10 @@ func cmdTemplateList() string {
 		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.TargetChannel, maxChNameLen, " "), u.TrimLine(tpl.Text, 20))
 		msg += fmt.Sprintln(row)
 	}
-	return fmt.Sprintln("```") + msg + fmt.Sprintln("```")
+	return str(fmt.Sprintln("```") + msg + fmt.Sprintln("```"))
 }
 
-func cmdTemplateAdd(channelName string, msgID int) (transitTo Transition, reply string) {
+func cmdTemplateAdd(channelName string, msgID int) (transitTo Transition, reply str) {
 	transitTo = func(m *t.Message) Handler {
 		return SetTemplate{Message: m, TargetChannel: channelName, MessageID: msgID}
 	}
@@ -167,7 +180,7 @@ func cmdTemplateAdd(channelName string, msgID int) (transitTo Transition, reply 
 	return
 }
 
-func cmdTemplateEdit(templateID int) (transitTo Transition, reply string) {
+func cmdTemplateEdit(templateID int) (transitTo Transition, reply str) {
 	transitTo = func(m *t.Message) Handler {
 		return SetTemplate{Message: m, TemplateID: templateID}
 	}
@@ -175,7 +188,7 @@ func cmdTemplateEdit(templateID int) (transitTo Transition, reply string) {
 	return
 }
 
-func cmdTemplateDelete(templateID int) string {
+func cmdTemplateDelete(templateID int) str {
 	deleted := s.DeleteTemplateByID(templateID)
 	if deleted > 0 {
 		return "Удалено."

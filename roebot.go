@@ -46,8 +46,9 @@ func main() {
 			chatID := update.Message.Chat.ID
 			hdl := transition(update.Message)
 			// username := update.Message.From.UserName
-			var reply string
-			transition, reply, sync = hdl.Handle()
+			var r cmd.Replier
+			transition, r, sync = hdl.Handle()
+			reply := r.Reply(bot)
 			if reply != "" {
 				msg := t.NewMessage(chatID, reply)
 				msg.ParseMode = "markdown"

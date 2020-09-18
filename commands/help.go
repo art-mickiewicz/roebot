@@ -6,6 +6,7 @@ var Help = map[string]string{
 	"help [COMMAND]": "help - список команд",
 	"template":       "template { list | add | edit | delete } - работа с шаблонами",
 	"variables":      "variables - список переменных для шаблона",
+	"messages":       "messages CHANNEL - краткая сводка сообщений канала с их ID",
 }
 
 var FullHelp = map[string]string{
@@ -17,7 +18,7 @@ var FullHelp = map[string]string{
 	`,
 }
 
-func GetHelp(cmd string) string {
+func GetHelp(cmd string) str {
 	var help string
 	if cmd == "" {
 		for _, h := range Help {
@@ -29,5 +30,5 @@ func GetHelp(cmd string) string {
 			help += fmt.Sprintln(fullHelp)
 		}
 	}
-	return fmt.Sprintln("```") + help + fmt.Sprintln("```")
+	return str(fmt.Sprintln("```") + help + fmt.Sprintln("```"))
 }
