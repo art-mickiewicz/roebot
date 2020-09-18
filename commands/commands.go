@@ -3,6 +3,7 @@ package commands
 import (
 	srv "19u4n4/roebot/services"
 	s "19u4n4/roebot/state"
+	u "19u4n4/roebot/util"
 	"fmt"
 	_ "log"
 	"strconv"
@@ -113,7 +114,27 @@ func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) 
 /* Template commands */
 
 func cmdTemplateList() string {
-	return ""
+	if len(s.Templates) == 0 {
+		return "Список шаблонов пуст."
+	}
+
+	maxChNameLen := 0
+	for _, tpl := range s.Templates {
+		l := len(tpl.TargetChannel)
+		if l > maxChNameLen {
+			maxChNameLen = l
+		}
+	}
+
+	titleCh := u.PadLine("Канал", maxChNameLen, " ")
+	titleLine := u.PadLine("", maxChNameLen, "=")
+	msg := fmt.Sprintln("ID  " + titleCh + "  Текст")
+	msg += fmt.Sprintln("==  " + titleLine + "  =============")
+	for _, tpl := range s.Templates {
+		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.TargetChannel, maxChNameLen, " "), u.TrimLine(tpl.Text, 10))
+		msg += fmt.Sprintln(row)
+	}
+	return fmt.Sprintln("```") + msg + fmt.Sprintln("```")
 }
 
 func cmdTemplateAdd(channelName string) (transitTo Transition, reply string) {
