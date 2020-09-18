@@ -5,6 +5,7 @@ import (
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
+	"robpike.io/filter"
 )
 
 var db *sql.DB
@@ -31,6 +32,15 @@ func GetTemplateBySource(srcPtr MessagePtr) *Template {
 		}
 	}
 	return nil
+}
+
+func DeleteTemplateByID(id int) int {
+	was := len(Templates)
+	Templates = filter.Choose(Templates, func(t Template) bool {
+		return t.ID != id
+	}).([]Template)
+	became := len(Templates)
+	return was - became
 }
 
 func init() {

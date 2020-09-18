@@ -66,11 +66,15 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 				return
 			}
 		case "delete":
-			if chID, ok := strconv.Atoi(args[0][1:]); ok != nil {
-				reply = cmdTemplateDelete(chID)
-			} else {
+			if len(args) < 1 {
+				reply = "Не указан ID шаблона для редактирования первым аргументом к команде \"template delete\"."
+				return
+			}
+			if chID, ok := strconv.Atoi(args[0]); ok != nil {
 				reply = "Неверный тип аргумента ID шаблона."
 				return
+			} else {
+				reply = cmdTemplateDelete(chID)
 			}
 		}
 	case "help", "start":
@@ -129,9 +133,9 @@ func cmdTemplateList() string {
 	titleCh := u.PadLine("Канал", maxChNameLen, " ")
 	titleLine := u.PadLine("", maxChNameLen, "=")
 	msg := fmt.Sprintln("ID  " + titleCh + "  Текст")
-	msg += fmt.Sprintln("==  " + titleLine + "  =============")
+	msg += fmt.Sprintln("==  " + titleLine + "  =======================")
 	for _, tpl := range s.Templates {
-		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.TargetChannel, maxChNameLen, " "), u.TrimLine(tpl.Text, 10))
+		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.TargetChannel, maxChNameLen, " "), u.TrimLine(tpl.Text, 20))
 		msg += fmt.Sprintln(row)
 	}
 	return fmt.Sprintln("```") + msg + fmt.Sprintln("```")
@@ -154,5 +158,10 @@ func cmdTemplateEdit(templateID int) (transitTo Transition, reply string) {
 }
 
 func cmdTemplateDelete(templateID int) string {
-	return "Удалено."
+	deleted := s.DeleteTemplateByID(templateID)
+	if deleted > 0 {
+		return "Удалено."
+	} else {
+		return "Шаблонов с таким ID не найдено."
+	}
 }
