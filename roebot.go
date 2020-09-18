@@ -40,6 +40,9 @@ func main() {
 				}
 				break
 			}
+			if update.Message == nil {
+				continue
+			}
 			chatID := update.Message.Chat.ID
 			hdl := transition(update.Message)
 			// username := update.Message.From.UserName
