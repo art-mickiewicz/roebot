@@ -5,6 +5,7 @@ import (
 	s "19u4n4/roebot/state"
 	"fmt"
 	_ "log"
+	"strconv"
 	"strings"
 
 	"robpike.io/filter"
@@ -37,15 +38,40 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 	}
 	switch name {
 	case "template":
-		if len(args) < 1 || args[0][0] != '@' {
-			reply = "Не указан канал для отправки шаблона первым аргументом к команде."
+		if len(args) < 1 {
+			reply = "Не указана субкоманда: { list | add | edit | delete }"
 			return
 		}
-		chName := args[0][1:]
-		transitTo = func(m *t.Message) Handler {
-			return SetTemplate{Message: m, TargetChannel: chName}
+		subcmd := args[0]
+		args = args[1:]
+		switch subcmd {
+		case "list":
+			reply = cmdTemplateList()
+		case "add":
+			if len(args) < 1 || args[0][0] != '@' {
+				reply = "Не указан канал для отправки шаблона первым аргументом к команде \"template add\"."
+				return
+			}
+			transitTo, reply = cmdTemplateAdd(args[0][1:])
+		case "edit":
+			if len(args) < 1 || args[0][0] != '@' {
+				reply = "Не указан ID шаблона для редактирования первым аргументом к команде \"template edit\"."
+				return
+			}
+			if chID, ok := strconv.Atoi(args[0][1:]); ok != nil {
+				transitTo, reply = cmdTemplateEdit(chID)
+			} else {
+				reply = "Неверный тип аргумента ID шаблона."
+				return
+			}
+		case "delete":
+			if chID, ok := strconv.Atoi(args[0][1:]); ok != nil {
+				reply = cmdTemplateDelete(chID)
+			} else {
+				reply = "Неверный тип аргумента ID шаблона."
+				return
+			}
 		}
-		reply = "Жду шаблон объявления следующим сообщением."
 	case "help", "start":
 		if len(args) < 1 {
 			reply = GetHelp("")
@@ -82,4 +108,30 @@ func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) 
 	reply = "Шаблон установлен"
 	sync = true
 	return
+}
+
+/* Template commands */
+
+func cmdTemplateList() string {
+	return ""
+}
+
+func cmdTemplateAdd(channelName string) (transitTo Transition, reply string) {
+	transitTo = func(m *t.Message) Handler {
+		return SetTemplate{Message: m, TargetChannel: channelName}
+	}
+	reply = "Жду шаблон объявления следующим сообщением."
+	return
+}
+
+func cmdTemplateEdit(templateID int) (transitTo Transition, reply string) {
+	transitTo = func(m *t.Message) Handler {
+		return SetTemplate{Message: m, TemplateID: templateID}
+	}
+	reply = "Жду шаблон объявления следующим сообщением."
+	return
+}
+
+func cmdTemplateDelete(templateID int) string {
+	return "Удалено."
 }
