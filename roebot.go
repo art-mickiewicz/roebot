@@ -64,9 +64,23 @@ func (sync synchronizer) start() {
 	sync.pushTemplates()
 }
 
+func (sync synchronizer) getChatByName(name string) (t.Chat, error) {
+	chName := "@" + name
+	return sync.bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
+}
+
 func (sync synchronizer) pushTemplates() {
 	for i, tpl := range sync.templates {
 		if tpl.IsPosted() {
+			if tpl.TargetMessagePtr.ChatID == 0 {
+				chat, err := sync.getChatByName(tpl.TargetChannel)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				tpl.TargetMessagePtr.ChatID = chat.ID
+				sync.templates[i] = tpl
+			}
 			edit := t.EditMessageTextConfig{
 				BaseEdit: t.BaseEdit{
 					ChatID:    tpl.TargetMessagePtr.ChatID,
@@ -76,8 +90,7 @@ func (sync synchronizer) pushTemplates() {
 			}
 			sync.bot.Send(edit)
 		} else {
-			chName := "@" + tpl.TargetChannel
-			chat, err := sync.bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
+			chat, err := sync.getChatByName(tpl.TargetChannel)
 			if err != nil {
 				log.Println(err)
 				continue

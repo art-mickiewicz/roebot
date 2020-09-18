@@ -53,7 +53,12 @@ func (cmd Zero) Handle() (transitTo Transition, reply string, sync bool) {
 				reply = "Не указан канал для отправки шаблона первым аргументом к команде \"template add\"."
 				return
 			}
-			transitTo, reply = cmdTemplateAdd(args[0][1:])
+			chName := args[0][1:]
+			msgID := 0
+			if len(args) > 1 {
+				msgID, _ = strconv.Atoi(args[1])
+			}
+			transitTo, reply = cmdTemplateAdd(chName, msgID)
 		case "edit":
 			if len(args) < 1 {
 				reply = "Не указан ID шаблона для редактирования первым аргументом к команде \"template edit\"."
@@ -101,6 +106,7 @@ type SetTemplate struct {
 	Message       *t.Message
 	TargetChannel string
 	TemplateID    int
+	MessageID     int
 }
 
 func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) {
@@ -117,6 +123,9 @@ func (cmd SetTemplate) Handle() (transitTo Transition, reply string, sync bool) 
 	} else {
 		srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
 		tpl := s.NewTemplate(cmd.TargetChannel, srcPtr, cmd.Message.Text)
+		if cmd.MessageID > 0 {
+			tpl.TargetMessagePtr = s.MessagePtr{ChatID: 0, MessageID: cmd.MessageID}
+		}
 		s.Templates = append(s.Templates, tpl)
 		reply = "Шаблон установлен"
 		sync = true
@@ -150,9 +159,9 @@ func cmdTemplateList() string {
 	return fmt.Sprintln("```") + msg + fmt.Sprintln("```")
 }
 
-func cmdTemplateAdd(channelName string) (transitTo Transition, reply string) {
+func cmdTemplateAdd(channelName string, msgID int) (transitTo Transition, reply string) {
 	transitTo = func(m *t.Message) Handler {
-		return SetTemplate{Message: m, TargetChannel: channelName}
+		return SetTemplate{Message: m, TargetChannel: channelName, MessageID: msgID}
 	}
 	reply = "Жду шаблон объявления следующим сообщением."
 	return
