@@ -66,6 +66,7 @@ type synchronizer struct {
 
 func (sync synchronizer) start() {
 	sync.pushTemplates()
+	s.PersistTemplates()
 }
 
 func (sync synchronizer) getChatByName(name string) (t.Chat, error) {
