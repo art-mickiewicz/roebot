@@ -87,8 +87,8 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 		}
 	case "variables":
 		var reply string
-		for k, _ := range srv.GetVariablesInfo() {
-			reply += fmt.Sprintln(fmt.Sprintf("%s", k))
+		for k, descr := range srv.GetVariablesInfo() {
+			reply += fmt.Sprintln(fmt.Sprintf("%s - %s", k, descr))
 		}
 		if len(reply) > 0 {
 			r = str(fmt.Sprintln("```") + reply + fmt.Sprintln("```"))

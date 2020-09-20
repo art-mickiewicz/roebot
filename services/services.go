@@ -27,3 +27,13 @@ func GetValue(k string) string {
 		return ""
 	}
 }
+
+func SetValue(key string, val string) bool {
+	if v, ok := variables[key]; ok {
+		v.Value = val
+		variables[key] = v
+		return true
+	} else {
+		return false
+	}
+}

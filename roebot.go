@@ -4,6 +4,7 @@ import (
 	"log"
 
 	cmd "19u4n4/roebot/commands"
+	srv "19u4n4/roebot/services"
 	s "19u4n4/roebot/state"
 
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -22,6 +23,7 @@ func main() {
 		log.Panic(err)
 	}
 	s.LoadTemplates()
+	srv.SyncCBR() // FIXME
 
 	transition := cmd.DefaultTransition
 	sync := false
