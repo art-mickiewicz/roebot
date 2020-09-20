@@ -16,3 +16,11 @@ type MessagePtr struct {
 func (tpl Template) IsPosted() bool {
 	return tpl.TargetMessagePtr.MessageID > 0
 }
+
+type State int
+
+const Null State = 0
+const Clean State = 1
+const Added State = 2
+const Updated State = 3
+const Deleted State = 4
