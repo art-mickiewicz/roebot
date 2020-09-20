@@ -75,7 +75,7 @@ func setStateForID(id int, state State) {
 	} else {
 		oldState = Null
 	}
-	if oldState == newState {
+	if oldState == state {
 		return
 	}
 	switch oldState {
@@ -114,6 +114,7 @@ func DeleteTemplateByID(id int) int {
 	became := len(templates)
 	if was-became > 0 {
 		setStateForID(id, Deleted)
+		PersistTemplates()
 	}
 	return was - became
 }

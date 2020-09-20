@@ -3,6 +3,7 @@ package state
 import (
 	"database/sql"
 	"log"
+	"strconv"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -16,6 +17,7 @@ var schema = [...]string{
 		, source_message_id INTEGER NULL
 		, target_chat_id INTEGER NULL
 		, target_message_id INTEGER NULL
+		, channel_name TEXT NULL
 		, text TEXT NOT NULL
 		)`,
 }
@@ -40,8 +42,8 @@ func PersistTemplates() {
 	if len(deletedTemplates) > 0 {
 		deletedIds := make([]string, len(deletedTemplates))
 		for i, tpl := range deletedTemplates {
-			deletedIds[i] = string(tpl.ID)
-			delete(staging, tpl.ID)
+			deletedIds[i] = strconv.Itoa(tpl.ID)
+			setStateForID(tpl.ID, Null)
 		}
 		inExpr := strings.Join(deletedIds, ",")
 		if _, err := db.Exec("DELETE FROM templates WHERE id IN (" + inExpr + ")"); err != nil {
@@ -54,7 +56,7 @@ func PersistTemplates() {
 	if len(updatedTemplates) > 0 {
 		stmt, err := db.Prepare(`
 			UPDATE templates
-			SET source_chat_id=?, source_message_id=?, target_chat_id=?, target_message_id=?, text=?
+			SET source_chat_id=?, source_message_id=?, target_chat_id=?, target_message_id=?, channel_name=?, text=?
 			WHERE id=?
 		`)
 		if err != nil {
@@ -64,7 +66,7 @@ func PersistTemplates() {
 			_, err := stmt.Exec(
 				tpl.SourceMessagePtr.ChatID, tpl.SourceMessagePtr.MessageID,
 				tpl.TargetMessagePtr.ChatID, tpl.TargetMessagePtr.MessageID,
-				tpl.Text, tpl.ID,
+				tpl.TargetChannel, tpl.Text, tpl.ID,
 			)
 			if err != nil {
 				log.Fatal(err)
@@ -74,22 +76,22 @@ func PersistTemplates() {
 	}
 
 	/* Added */
-	addedTemplates := GetTemplatesWithState(Deleted)
+	addedTemplates := GetTemplatesWithState(Added)
 	if len(addedTemplates) > 0 {
 		stmt, err := db.Prepare(`
 			INSERT INTO templates
-			(id, source_chat_id, source_message_id, target_chat_id, target_message_id, text)
-			VALUES (?, ?, ?, ?, ?, ?)
+			(id, source_chat_id, source_message_id, target_chat_id, target_message_id, channel_name, text)
+			VALUES (?, ?, ?, ?, ?, ?, ?)
 		`)
 		if err != nil {
 			log.Fatal(err)
 		}
-		for _, tpl := range updatedTemplates {
+		for _, tpl := range addedTemplates {
 			_, err := stmt.Exec(
 				tpl.ID,
 				tpl.SourceMessagePtr.ChatID, tpl.SourceMessagePtr.MessageID,
 				tpl.TargetMessagePtr.ChatID, tpl.TargetMessagePtr.MessageID,
-				tpl.Text,
+				tpl.TargetChannel, tpl.Text,
 			)
 			if err != nil {
 				log.Fatal(err)
@@ -101,8 +103,8 @@ func PersistTemplates() {
 
 func LoadTemplates() {
 	rows, err := db.Query(`
-		SELECT id, source_chat_id, source_message_id, target_chat_id, target_message_id, text
-		FROM templates
+		SELECT id, source_chat_id, source_message_id, target_chat_id, target_message_id, channel_name, text
+		FROM templates ORDER BY id
 	`)
 	if err != nil {
 		log.Fatal(err)
@@ -113,7 +115,8 @@ func LoadTemplates() {
 		tpl := Template{}
 		err := rows.Scan(
 			&(tpl.ID), &(tpl.SourceMessagePtr.ChatID), &(tpl.SourceMessagePtr.MessageID),
-			&(tpl.TargetMessagePtr.ChatID), &(tpl.TargetMessagePtr.MessageID), &(tpl.Text),
+			&(tpl.TargetMessagePtr.ChatID), &(tpl.TargetMessagePtr.MessageID), &(tpl.TargetChannel),
+			&(tpl.Text),
 		)
 		if err != nil {
 			log.Fatal(err)

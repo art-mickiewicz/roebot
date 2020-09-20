@@ -117,6 +117,7 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 	if cmd.TemplateID > 0 {
 		if tpl, ok := s.GetTemplateByID(cmd.TemplateID); ok {
 			tpl.Text = cmd.Message.Text
+			s.SetTemplate(tpl)
 			r = str("Шаблон установлен")
 			sync = true
 		} else {
