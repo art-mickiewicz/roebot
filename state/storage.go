@@ -5,18 +5,19 @@ import (
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
-	"robpike.io/filter"
 )
 
 var db *sql.DB
 var schema = [...]string{
 	"CREATE TABLE IF NOT EXISTS templates (id INTEGER PRIMARY KEY, source_message_id INTEGER NULL, target_message_id INTEGER NULL, text TEXT NOT NULL)",
 }
-var Templates = make([]Template, 0, 10)
+
+//var templates = make([]Template, 0, 10)
+var templates = make(map[int]Template)
 
 func NewTemplate(targetChannel string, srcPtr MessagePtr, text string) Template {
 	maxID := 0
-	for _, t := range Templates {
+	for _, t := range templates {
 		if t.ID > maxID {
 			maxID = t.ID
 		}
@@ -25,30 +26,46 @@ func NewTemplate(targetChannel string, srcPtr MessagePtr, text string) Template 
 	return Template{ID: newID, TargetChannel: targetChannel, SourceMessagePtr: srcPtr, Text: text}
 }
 
-func GetTemplateBySource(srcPtr MessagePtr) *Template {
-	for i, t := range Templates {
+func GetTemplateBySource(srcPtr MessagePtr) (tpl Template, ok bool) {
+	for k, t := range templates {
 		if t.SourceMessagePtr == srcPtr {
-			return &Templates[i]
+			return templates[k], true
 		}
 	}
-	return nil
+	return Template{}, false
 }
 
-func GetTemplateByID(id int) *Template {
-	for i, t := range Templates {
+func GetTemplateByID(id int) (tpl Template, ok bool) {
+	for i, t := range templates {
 		if t.ID == id {
-			return &Templates[i]
+			return templates[i], true
 		}
 	}
-	return nil
+	return Template{}, false
+}
+
+func GetTemplatesCount() int {
+	return len(templates)
+}
+
+func GetTemplates() []Template {
+	tpls := make([]Template, len(templates))
+	i := 0
+	for _, v := range templates {
+		tpls[i] = v
+		i++
+	}
+	return tpls
+}
+
+func SetTemplate(tpl Template) {
+	templates[tpl.ID] = tpl
 }
 
 func DeleteTemplateByID(id int) int {
-	was := len(Templates)
-	Templates = filter.Choose(Templates, func(t Template) bool {
-		return t.ID != id
-	}).([]Template)
-	became := len(Templates)
+	was := len(templates)
+	delete(templates, id)
+	became := len(templates)
 	return was - became
 }
 

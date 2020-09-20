@@ -26,7 +26,7 @@ func main() {
 	sync := false
 	for {
 		if sync {
-			sr := synchronizer{bot: bot, templates: s.Templates}
+			sr := synchronizer{bot: bot, templates: s.GetTemplates()}
 			sr.start()
 		}
 		select {
@@ -34,7 +34,7 @@ func main() {
 			if update.EditedMessage != nil {
 				chatID := update.EditedMessage.Chat.ID
 				msgID := update.EditedMessage.MessageID
-				if tpl := s.GetTemplateBySource(s.MessagePtr{ChatID: chatID, MessageID: msgID}); tpl != nil {
+				if tpl, ok := s.GetTemplateBySource(s.MessagePtr{ChatID: chatID, MessageID: msgID}); ok {
 					tpl.Text = update.EditedMessage.Text
 					sync = true
 				}

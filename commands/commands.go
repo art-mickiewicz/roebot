@@ -115,7 +115,7 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 	transitTo = DefaultTransition
 	sync = false
 	if cmd.TemplateID > 0 {
-		if tpl := s.GetTemplateByID(cmd.TemplateID); tpl != nil {
+		if tpl, ok := s.GetTemplateByID(cmd.TemplateID); ok {
 			tpl.Text = cmd.Message.Text
 			r = str("Шаблон установлен")
 			sync = true
@@ -128,7 +128,7 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 		if cmd.MessageID > 0 {
 			tpl.TargetMessagePtr = s.MessagePtr{ChatID: 0, MessageID: cmd.MessageID}
 		}
-		s.Templates = append(s.Templates, tpl)
+		s.SetTemplate(tpl)
 		r = str("Шаблон установлен")
 		sync = true
 	}
@@ -138,12 +138,12 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 /* Template commands */
 
 func cmdTemplateList() str {
-	if len(s.Templates) == 0 {
+	if s.GetTemplatesCount() == 0 {
 		return "Список шаблонов пуст."
 	}
 
 	maxChNameLen := 0
-	for _, tpl := range s.Templates {
+	for _, tpl := range s.GetTemplates() {
 		l := len(tpl.TargetChannel)
 		if l > maxChNameLen {
 			maxChNameLen = l
@@ -154,7 +154,7 @@ func cmdTemplateList() str {
 	titleLine := u.PadLine("", maxChNameLen, "=")
 	msg := fmt.Sprintln("ID  " + titleCh + "  Текст")
 	msg += fmt.Sprintln("==  " + titleLine + "  =======================")
-	for _, tpl := range s.Templates {
+	for _, tpl := range s.GetTemplates() {
 		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.TargetChannel, maxChNameLen, " "), u.TrimLine(tpl.Text, 20))
 		msg += fmt.Sprintln(row)
 	}
