@@ -21,6 +21,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+	s.LoadTemplates()
 
 	transition := cmd.DefaultTransition
 	sync := false
