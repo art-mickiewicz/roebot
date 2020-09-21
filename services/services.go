@@ -1,6 +1,11 @@
 package services
 
+import (
+	"fmt"
+)
+
 var variables = make(map[string]Variable)
+var services = make(map[string]func())
 
 type Variable struct {
 	Name        string
@@ -15,7 +20,7 @@ func RegisterVariable(name string, description string) {
 func GetVariablesInfo() map[string]string {
 	info := make(map[string]string)
 	for k, v := range variables {
-		info[k] = v.Description
+		info[k] = fmt.Sprintf("%s = %s - %s", k, v.Value, v.Description)
 	}
 	return info
 }
@@ -35,5 +40,15 @@ func SetValue(key string, val string) bool {
 		return true
 	} else {
 		return false
+	}
+}
+
+func RegisterService(name string, synchronizer func()) {
+	services[name] = synchronizer
+}
+
+func SyncAll() {
+	for _, srv := range services {
+		srv()
 	}
 }
