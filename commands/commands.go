@@ -92,7 +92,7 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 			reply += fmt.Sprintln(descr)
 		}
 		if len(reply) > 0 {
-			r = str(fmt.Sprintln("```") + reply + fmt.Sprintln("```"))
+			r = str(fmt.Sprintf("<pre>%s</pre>", reply))
 		}
 	case "messages":
 		if len(args) < 1 || args[0][0] != '@' {
@@ -166,7 +166,7 @@ func cmdTemplateList() str {
 		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.PrettyTarget(), maxChNameLen, " "), u.TrimLine(tpl.Text, 20))
 		msg += fmt.Sprintln(row)
 	}
-	return str(fmt.Sprintln("```") + msg + fmt.Sprintln("```"))
+	return str(fmt.Sprintf("<pre>%s</pre>", msg))
 }
 
 func cmdTemplateAdd(channelName string, msgID int) (transitTo Transition, reply str) {

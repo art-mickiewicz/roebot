@@ -30,5 +30,5 @@ func GetHelp(cmd string) str {
 			help += fmt.Sprintln(fullHelp)
 		}
 	}
-	return str(fmt.Sprintln("```") + help + fmt.Sprintln("```"))
+	return str(fmt.Sprintf("<pre>%s</pre>", help))
 }
