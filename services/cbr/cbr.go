@@ -12,10 +12,10 @@ import (
 const url = "https://www.cbr-xml-daily.ru/daily_json.js"
 
 func init() {
-	srv.RegisterVariable("cbr_usdrub", "курс доллара США к рублю")
-	srv.RegisterVariable("cbr_eurrub", "курс евро к рублю")
-	srv.RegisterVariable("cbr_cnyrub", "курс китайского юаня к рублю")
-	srv.RegisterVariable("cbr_gbprub", "курс фунта стерлингов к рублю")
+	srv.RegisterVariable("cbr_usd", "курс доллара США к рублю")
+	srv.RegisterVariable("cbr_eur", "курс евро к рублю")
+	srv.RegisterVariable("cbr_cny", "курс китайского юаня к рублю")
+	srv.RegisterVariable("cbr_gbp", "курс фунта стерлингов к рублю")
 	srv.RegisterService("cbr", "@hourly", SyncCBR)
 }
 
@@ -39,9 +39,9 @@ func SyncCBR() {
 		return
 	}
 
-	srv.SetValue("cbr_usdrub", fmt.Sprintf("%f", cbrResp.Valute["USD"].Value))
-	srv.SetValue("cbr_eurrub", fmt.Sprintf("%f", cbrResp.Valute["EUR"].Value))
-	srv.SetValue("cbr_cnyrub", fmt.Sprintf("%f", cbrResp.Valute["CNY"].Value))
-	srv.SetValue("cbr_gbprub", fmt.Sprintf("%f", cbrResp.Valute["GBP"].Value))
+	srv.SetValue("cbr_usd", fmt.Sprintf("%f", cbrResp.Valute["USD"].Value))
+	srv.SetValue("cbr_eur", fmt.Sprintf("%f", cbrResp.Valute["EUR"].Value))
+	srv.SetValue("cbr_cny", fmt.Sprintf("%f", cbrResp.Valute["CNY"].Value))
+	srv.SetValue("cbr_gbp", fmt.Sprintf("%f", cbrResp.Valute["GBP"].Value))
 	srv.Commit()
 }

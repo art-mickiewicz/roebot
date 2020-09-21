@@ -49,7 +49,6 @@ func MessageToEntities(msg *t.Message) []Entity {
 	ret := make([]Entity, 0, 2*meLen+1)
 	cursor := 0
 	for _, me := range *msg.Entities {
-		fmt.Println(me.Offset, me.Length)
 		if cursor < me.Offset {
 			upTo := min(me.Offset, u16len)
 			ent := Entity{
