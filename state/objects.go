@@ -2,6 +2,7 @@ package state
 
 import (
 	"bytes"
+	"fmt"
 	t "text/template"
 )
 
@@ -32,6 +33,14 @@ func (tpl Template) Apply(vars map[string]string) string {
 		return ""
 	}
 	return buf.String()
+}
+
+func (tpl Template) PrettyTarget() string {
+	if tpl.TargetMessagePtr.MessageID > 0 {
+		return fmt.Sprintf("%s#%d", tpl.TargetChannel, tpl.TargetMessagePtr.MessageID)
+	} else {
+		return tpl.TargetChannel
+	}
 }
 
 type State int

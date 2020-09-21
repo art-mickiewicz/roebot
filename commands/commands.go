@@ -151,7 +151,7 @@ func cmdTemplateList() str {
 
 	maxChNameLen := 0
 	for _, tpl := range s.GetTemplates() {
-		l := len(tpl.TargetChannel)
+		l := len(tpl.PrettyTarget())
 		if l > maxChNameLen {
 			maxChNameLen = l
 		}
@@ -162,7 +162,7 @@ func cmdTemplateList() str {
 	msg := fmt.Sprintln("ID  " + titleCh + "  Текст")
 	msg += fmt.Sprintln("==  " + titleLine + "  =======================")
 	for _, tpl := range s.GetTemplates() {
-		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.TargetChannel, maxChNameLen, " "), u.TrimLine(tpl.Text, 20))
+		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.PrettyTarget(), maxChNameLen, " "), u.TrimLine(tpl.Text, 20))
 		msg += fmt.Sprintln(row)
 	}
 	return str(fmt.Sprintln("```") + msg + fmt.Sprintln("```"))
