@@ -33,17 +33,14 @@ func main() {
 
 	transition := cmd.DefaultTransition
 	sync := false
-	go func() {
-		for range srv.Updates {
-			Sync()
-		}
-	}()
 
 	for {
 		if sync {
 			Sync()
 		}
 		select {
+		case <-srv.Updates:
+			Sync()
 		case update := <-ch:
 			if update.EditedMessage != nil {
 				if allowed := checkAccess(update.EditedMessage); !allowed {
