@@ -13,8 +13,8 @@ const url = "https://api.binance.com/api/v3/ticker/price"
 func init() {
 	srv.RegisterVariable("binance_btc", "BTC / RUB")
 	srv.RegisterVariable("binance_eth", "ETH / RUB")
-	srv.RegisterVariable("binance_bch", "ВСН / RUB")
-	srv.RegisterVariable("binance_usd", "USD / RUB")
+	srv.RegisterVariable("binance_bchusdt", "ВСН / USDT")
+	srv.RegisterVariable("binance_usdt", "USDT / RUB")
 	srv.RegisterService("binance", "@hourly", SyncBinance)
 }
 
@@ -44,7 +44,7 @@ func SyncBinance() {
 	}
 	srv.SetValue("binance_btc", symbolsMap["BTCRUB"])
 	srv.SetValue("binance_eth", symbolsMap["ETHRUB"])
-	srv.SetValue("binance_bch", symbolsMap["BCHRUB"])
-	srv.SetValue("binance_usd", symbolsMap["USDTRUB"])
+	srv.SetValue("binance_bchusdt", symbolsMap["BCHUSDT"])
+	srv.SetValue("binance_usdt", symbolsMap["USDTRUB"])
 	srv.Commit()
 }
