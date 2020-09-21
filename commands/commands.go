@@ -13,6 +13,7 @@ import (
 	"robpike.io/filter"
 
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
+	strip "github.com/grokify/html-strip-tags-go"
 )
 
 var DefaultTransition = func(m *t.Message) Handler {
@@ -163,7 +164,8 @@ func cmdTemplateList() str {
 	msg := fmt.Sprintln("ID  " + titleCh + "  Текст")
 	msg += fmt.Sprintln("==  " + titleLine + "  =======================")
 	for _, tpl := range s.GetTemplates() {
-		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.PrettyTarget(), maxChNameLen, " "), u.TrimLine(tpl.Text, 20))
+		text := strip.StripTags(tpl.Text)
+		row := fmt.Sprintf("%2d  %s  %s", tpl.ID, u.PadLine(tpl.PrettyTarget(), maxChNameLen, " "), u.TrimLine(text, 20))
 		msg += fmt.Sprintln(row)
 	}
 	return str(fmt.Sprintf("<pre>%s</pre>", msg))

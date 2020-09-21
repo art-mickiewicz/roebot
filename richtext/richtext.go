@@ -36,6 +36,7 @@ func (e Entity) String() string {
 func MessageToEntities(msg *t.Message) []Entity {
 	runes := []rune(msg.Text)
 	meLen := len(*msg.Entities)
+	fmt.Println("LENGTH OF ENTITIES", meLen)
 	ret := make([]Entity, 0, 2*meLen+1)
 	cursor := 0
 	for _, me := range *msg.Entities {
