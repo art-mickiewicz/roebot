@@ -65,3 +65,7 @@ func EntitiesToHTML(es []Entity) string {
 	}
 	return ret
 }
+
+func MessageToHTML(msg *t.Message) string {
+	return EntitiesToHTML(MessageToEntities(msg))
+}
