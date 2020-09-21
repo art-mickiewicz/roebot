@@ -21,7 +21,7 @@ var schema = [...]string{
 		, text TEXT NOT NULL
 		)`,
 	`CREATE TABLE IF NOT EXISTS chats
-		( id INTEGER PRIMARY KEY
+		( chatid INTEGER NOT NULL
 		, username TEXT NOT NULL
 		, title TEXT NOT NULL
 		)`,
@@ -135,13 +135,13 @@ func LoadTemplates() {
 
 func PersistChat(chat Chat, update bool) {
 	if update {
-		_, err := db.Exec("UPDATE chats SET username = ?, title = ? WHERE id = ?",
+		_, err := db.Exec("UPDATE chats SET username=?, title=? WHERE chatid=?",
 			chat.Username, chat.Title, chat.ID)
 		if err != nil {
 			log.Println(err)
 		}
 	} else {
-		_, err := db.Exec("INSERT INTO chats (id, username, title) VALUES (?, ?, ?)",
+		_, err := db.Exec("INSERT INTO chats (chatid, username, title) VALUES (?, ?, ?)",
 			chat.ID, chat.Username, chat.Title)
 		if err != nil {
 			log.Println(err)
@@ -150,7 +150,7 @@ func PersistChat(chat Chat, update bool) {
 }
 
 func LoadChats() {
-	rows, err := db.Query("SELECT id, username, title FROM chats")
+	rows, err := db.Query("SELECT chatid, username, title FROM chats")
 	if err != nil {
 		log.Fatal(err)
 	}

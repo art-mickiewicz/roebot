@@ -49,7 +49,7 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 				r = str("Не указан канал для отправки шаблона первым аргументом к команде \"template add\".")
 				return
 			}
-			chName := args[0][1:]
+			chName := args[0]
 			msgID := 0
 			if len(args) > 1 {
 				msgID, _ = strconv.Atoi(args[1])
@@ -219,7 +219,7 @@ func cmdChats() str {
 	msg += fmt.Sprintln(idLine + "  " + userLine + "  " + titleLine)
 	for _, ch := range s.GetChats() {
 		row := fmt.Sprintf(
-			"%10d  %s  %s",
+			"%16d  %s  %s",
 			ch.ID, u.PadLine(ch.Username, maxChUsernameLen, " "),
 			ch.Title,
 		)

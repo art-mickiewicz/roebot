@@ -1,7 +1,6 @@
 package state
 
 import (
-	"fmt"
 	"strconv"
 	"text/template"
 )
@@ -12,7 +11,6 @@ var staging = make(map[int]State)
 var chats = make(map[int64]Chat)
 
 func AddChat(id int64, username string, title string) {
-	fmt.Println("ADD CHAT", id, username, title)
 	chat, update := chats[id]
 	if update {
 		dirty := false
@@ -28,7 +26,8 @@ func AddChat(id int64, username string, title string) {
 			PersistChat(chat, true)
 		}
 	} else {
-		chats[id] = Chat{ID: id, Username: username, Title: title}
+		chat = Chat{ID: id, Username: username, Title: title}
+		chats[id] = chat
 		PersistChat(chat, false)
 	}
 }
