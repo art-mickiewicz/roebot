@@ -42,10 +42,6 @@ func SyncBinance() {
 	for _, sym := range symbols {
 		symbolsMap[sym.Name] = sym.Price
 	}
-	// srv.SetValue("binance_btcusdt", fmt.Sprintf("%f", symbolsMap["BTCUSDT"]))
-	// srv.SetValue("binance_ethusdt", fmt.Sprintf("%f", symbolsMap["ETHUSDT"]))
-	// srv.SetValue("binance_bchusdt", fmt.Sprintf("%f", symbolsMap["BCHUSDT"]))
-	// srv.SetValue("binance_usdtrub", fmt.Sprintf("%f", symbolsMap["USDTRUB"]))
 	srv.SetValue("binance_btcusdt", symbolsMap["BTCUSDT"])
 	srv.SetValue("binance_ethusdt", symbolsMap["ETHUSDT"])
 	srv.SetValue("binance_bchusdt", symbolsMap["BCHUSDT"])

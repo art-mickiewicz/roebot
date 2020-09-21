@@ -32,7 +32,7 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 		name = name[1:]
 	}
 	switch name {
-	case "template":
+	case "template", "templates":
 		if len(args) < 1 {
 			r = str("Не указана субкоманда: { list | add | edit | delete }")
 			return
