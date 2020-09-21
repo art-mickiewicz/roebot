@@ -95,13 +95,8 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 		if len(reply) > 0 {
 			r = str(fmt.Sprintf("<pre>%s</pre>", reply))
 		}
-	case "messages":
-		if len(args) < 1 {
-			r = str("Не указан канал первым аргументом к команде \"messages\".")
-			return
-		}
-		chName := args[0]
-		r = cmdMessages(chName)
+	case "chats":
+		r = cmdChats()
 	}
 	return
 }
@@ -196,14 +191,39 @@ func cmdTemplateDelete(templateID int) str {
 	}
 }
 
-func cmdMessages(chName string) Replier {
-	var f funcReplier
-	f = func(bot *t.BotAPI) string {
-		_, err := bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
-		if err != nil {
-			return "Канал недоступен."
-		}
-		return ""
+func cmdChats() str {
+	if s.GetChatsCount() == 0 {
+		return "Список чатов пуст."
 	}
-	return f
+
+	maxChUsernameLen := 0
+	maxChTitleLen := 0
+	for _, ch := range s.GetChats() {
+		ul := len(ch.Username)
+		tl := len(ch.Title)
+		if ul > maxChUsernameLen {
+			maxChUsernameLen = ul
+		}
+		if tl > maxChTitleLen {
+			maxChTitleLen = tl
+		}
+	}
+
+	idCh := u.PadLine("ID", 10, " ")
+	idLine := u.PadLine("", 10, "=")
+	userCh := u.PadLine("Пользователь", maxChUsernameLen, " ")
+	userLine := u.PadLine("", maxChUsernameLen, "=")
+	titleCh := u.PadLine("Заголовок", maxChTitleLen, " ")
+	titleLine := u.PadLine("", maxChTitleLen, "=")
+	msg := fmt.Sprintln(idCh + "  " + userCh + "  " + titleCh)
+	msg += fmt.Sprintln(idLine + "  " + userLine + "  " + titleLine)
+	for _, ch := range s.GetChats() {
+		row := fmt.Sprintf(
+			"%10d  %s  %s",
+			ch.ID, u.PadLine(ch.Username, maxChUsernameLen, " "),
+			ch.Title,
+		)
+		msg += fmt.Sprintln(row)
+	}
+	return str(fmt.Sprintf("<pre>%s</pre>", msg))
 }

@@ -31,6 +31,20 @@ func AddChat(id int64, username string, title string) {
 	}
 }
 
+func GetChatsCount() int {
+	return len(chats)
+}
+
+func GetChats() []Chat {
+	cs := make([]Chat, len(chats))
+	i := 0
+	for _, v := range chats {
+		cs[i] = v
+		i++
+	}
+	return cs
+}
+
 func NewTemplate(targetChannel string, srcPtr MessagePtr, text string) Template {
 	maxID := 0
 	for _, t := range templates {
