@@ -46,4 +46,5 @@ func SyncBinance() {
 	srv.SetValue("binance_ethusdt", symbolsMap["ETHUSDT"])
 	srv.SetValue("binance_bchusdt", symbolsMap["BCHUSDT"])
 	srv.SetValue("binance_usdtrub", symbolsMap["USDTRUB"])
+	srv.Commit()
 }

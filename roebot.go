@@ -13,7 +13,7 @@ import (
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var bot *t.BotAPI
+var bot *t.BotAPI // FIXME
 
 func main() {
 	var err error
@@ -33,6 +33,13 @@ func main() {
 
 	transition := cmd.DefaultTransition
 	sync := false
+	go func() {
+		for range srv.Updates {
+			sr := synchronizer{bot: bot, templates: s.GetTemplates()}
+			sr.start()
+		}
+	}()
+
 	for {
 		if sync {
 			sr := synchronizer{bot: bot, templates: s.GetTemplates()}

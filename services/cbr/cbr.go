@@ -43,4 +43,5 @@ func SyncCBR() {
 	srv.SetValue("cbr_eurrub", fmt.Sprintf("%f", cbrResp.Valute["EUR"].Value))
 	srv.SetValue("cbr_cnyrub", fmt.Sprintf("%f", cbrResp.Valute["CNY"].Value))
 	srv.SetValue("cbr_gbprub", fmt.Sprintf("%f", cbrResp.Valute["GBP"].Value))
+	srv.Commit()
 }

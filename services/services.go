@@ -10,6 +10,9 @@ var variables = make(map[string]Variable)
 var services = make(map[string]func())
 var cron *c.Cron
 
+var Updates = make(chan bool)
+var dirty bool = false
+
 type Variable struct {
 	Name        string
 	Value       string
@@ -50,11 +53,21 @@ func GetValue(k string) string {
 
 func SetValue(key string, val string) bool {
 	if v, ok := variables[key]; ok {
-		v.Value = val
+		if v.Value != val {
+			v.Value = val
+			dirty = true
+		}
 		variables[key] = v
 		return true
 	} else {
 		return false
+	}
+}
+
+func Commit() {
+	if dirty {
+		Updates <- true
+		dirty = false
 	}
 }
 
