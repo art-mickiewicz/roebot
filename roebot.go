@@ -13,7 +13,7 @@ import (
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var bot *t.BotAPI // FIXME
+var bot *t.BotAPI
 
 func main() {
 	var err error
@@ -35,15 +35,13 @@ func main() {
 	sync := false
 	go func() {
 		for range srv.Updates {
-			sr := synchronizer{bot: bot, templates: s.GetTemplates()}
-			sr.start()
+			Sync()
 		}
 	}()
 
 	for {
 		if sync {
-			sr := synchronizer{bot: bot, templates: s.GetTemplates()}
-			sr.start()
+			Sync()
 		}
 		select {
 		case update := <-ch:
@@ -104,32 +102,27 @@ func accessDeniedMessage(chatID int64) {
 	bot.Send(msg)
 }
 
-type synchronizer struct {
-	bot       *t.BotAPI
-	templates []s.Template
-}
-
-func (sync synchronizer) start() {
-	sync.pushTemplates()
+func Sync() {
+	pushTemplates()
 	s.PersistTemplates()
 }
 
-func (sync synchronizer) getChatByName(name string) (t.Chat, error) {
+func getChatByName(name string) (t.Chat, error) {
 	chName := "@" + name
-	return sync.bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
+	return bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
 }
 
-func (sync synchronizer) pushTemplates() {
-	for i, tpl := range sync.templates {
+func pushTemplates() {
+	for _, tpl := range s.GetTemplates() {
 		if tpl.IsPosted() {
 			if tpl.TargetMessagePtr.ChatID == 0 {
-				chat, err := sync.getChatByName(tpl.TargetChannel)
+				chat, err := getChatByName(tpl.TargetChannel)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
 				tpl.TargetMessagePtr.ChatID = chat.ID
-				sync.templates[i] = tpl
+				s.SetTemplate(tpl)
 			}
 			edit := t.EditMessageTextConfig{
 				BaseEdit: t.BaseEdit{
@@ -139,18 +132,18 @@ func (sync synchronizer) pushTemplates() {
 				Text: tpl.Apply(srv.GetVariablesValues()),
 			}
 			edit.ParseMode = "markdown"
-			sync.bot.Send(edit)
+			bot.Send(edit)
 		} else {
-			chat, err := sync.getChatByName(tpl.TargetChannel)
+			chat, err := getChatByName(tpl.TargetChannel)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 			msg := t.NewMessage(chat.ID, tpl.Apply(srv.GetVariablesValues()))
-			postedMsg, err := sync.bot.Send(msg)
+			postedMsg, err := bot.Send(msg)
 			if err == nil {
 				tpl.TargetMessagePtr = s.MessagePtr{ChatID: chat.ID, MessageID: postedMsg.MessageID}
-				sync.templates[i] = tpl
+				s.SetTemplate(tpl)
 			}
 		}
 	}
