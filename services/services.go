@@ -24,6 +24,14 @@ func RegisterVariable(name string, description string) {
 	variables[name] = Variable{Name: name, Description: description}
 }
 
+func GetVariablesValues() map[string]string {
+	vals := make(map[string]string)
+	for k, v := range variables {
+		vals[k] = v.Value
+	}
+	return vals
+}
+
 func GetVariablesInfo() map[string]string {
 	info := make(map[string]string)
 	for k, v := range variables {

@@ -129,7 +129,7 @@ func (sync synchronizer) pushTemplates() {
 					ChatID:    tpl.TargetMessagePtr.ChatID,
 					MessageID: tpl.TargetMessagePtr.MessageID,
 				},
-				Text: tpl.Text,
+				Text: tpl.Apply(srv.GetVariablesValues()),
 			}
 			sync.bot.Send(edit)
 		} else {
@@ -138,7 +138,7 @@ func (sync synchronizer) pushTemplates() {
 				log.Println(err)
 				continue
 			}
-			msg := t.NewMessage(chat.ID, tpl.Text)
+			msg := t.NewMessage(chat.ID, tpl.Apply(srv.GetVariablesValues()))
 			postedMsg, err := sync.bot.Send(msg)
 			if err == nil {
 				tpl.TargetMessagePtr = s.MessagePtr{ChatID: chat.ID, MessageID: postedMsg.MessageID}
