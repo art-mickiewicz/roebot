@@ -20,6 +20,11 @@ var schema = [...]string{
 		, channel_name TEXT NULL
 		, text TEXT NOT NULL
 		)`,
+	`CREATE TABLE IF NOT EXISTS chats
+		( id INTEGER PRIMARY KEY
+		, username TEXT NOT NULL
+		, title TEXT NOT NULL
+		)`,
 }
 
 func init() {
@@ -125,5 +130,32 @@ func LoadTemplates() {
 		if err == nil {
 			templates[tpl.ID] = tpl
 		}
+	}
+}
+
+func PersistChat(chat Chat, update bool) {
+	if update {
+		db.Exec("UPDATE chats SET username = ?, title = ? WHERE id = ?",
+			chat.Username, chat.Title, chat.ID)
+	} else {
+		db.Exec("INSERT INTO chats (id, username, title) VALUES (?, ?, ?)",
+			chat.ID, chat.Username, chat.Title)
+	}
+}
+
+func LoadChats() {
+	rows, err := db.Query("SELECT id, username, title FROM chats")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		chat := Chat{}
+		err := rows.Scan(&(chat.ID), &(chat.Username), &(chat.Title))
+		if err != nil {
+			log.Fatal(err)
+		}
+		chats[chat.ID] = chat
 	}
 }

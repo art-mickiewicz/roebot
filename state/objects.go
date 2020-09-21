@@ -6,6 +6,12 @@ import (
 	t "text/template"
 )
 
+type Chat struct {
+	ID       int64
+	Username string
+	Title    string
+}
+
 type Template struct {
 	ID               int
 	TargetChannel    string

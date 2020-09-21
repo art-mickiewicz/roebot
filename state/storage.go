@@ -8,6 +8,28 @@ import (
 //var templates = make([]Template, 0, 10)
 var templates = make(map[int]Template)
 var staging = make(map[int]State)
+var chats = make(map[int64]Chat)
+
+func AddChat(id int64, username string, title string) {
+	chat, update := chats[id]
+	if update {
+		dirty := false
+		if username != chat.Username {
+			chat.Username = username
+			dirty = true
+		}
+		if title != chat.Title {
+			chat.Title = title
+			dirty = true
+		}
+		if dirty {
+			PersistChat(chat, true)
+		}
+	} else {
+		chats[id] = Chat{ID: id, Username: username, Title: title}
+		PersistChat(chat, false)
+	}
+}
 
 func NewTemplate(targetChannel string, srcPtr MessagePtr, text string) Template {
 	maxID := 0

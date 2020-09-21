@@ -31,6 +31,7 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+	s.LoadChats()
 	s.LoadTemplates()
 	go srv.SyncAll()
 
@@ -45,6 +46,11 @@ func main() {
 		case <-srv.Updates:
 			Sync()
 		case update := <-ch:
+			if update.ChannelPost != nil {
+				chat := update.ChannelPost.Chat
+				s.AddChat(chat.ID, chat.UserName, chat.Title)
+				break
+			}
 			if update.EditedMessage != nil {
 				if allowed := checkAccess(update.EditedMessage); !allowed {
 					accessDeniedMessage(update.EditedMessage.Chat.ID)
@@ -108,10 +114,12 @@ func Sync() {
 }
 
 func getChatByName(name string) (t.Chat, error) {
+	log.Println("Get chat by name", name)
 	return bot.GetChat(t.ChatConfig{SuperGroupUsername: name})
 }
 
 func getChatByID(id int64) (t.Chat, error) {
+	log.Println("Get chat by ID", id)
 	return bot.GetChat(t.ChatConfig{ChatID: id})
 }
 
