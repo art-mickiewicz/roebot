@@ -4,6 +4,7 @@ import (
 	"log"
 
 	cmd "19u4n4/roebot/commands"
+	"19u4n4/roebot/config"
 	srv "19u4n4/roebot/services"
 	_ "19u4n4/roebot/services/binance"
 	_ "19u4n4/roebot/services/cbr"
@@ -12,8 +13,11 @@ import (
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+var bot *t.BotAPI
+
 func main() {
-	bot, err := t.NewBotAPI("1185985324:AAHuOeP1g9PGgd_cuJno40uGAaKH_nWx0Ew")
+	var err error
+	bot, err = t.NewBotAPI("1185985324:AAHuOeP1g9PGgd_cuJno40uGAaKH_nWx0Ew")
 	if err != nil {
 		log.Panic(err)
 	}
@@ -37,6 +41,10 @@ func main() {
 		select {
 		case update := <-ch:
 			if update.EditedMessage != nil {
+				if allowed := checkAccess(update.EditedMessage); !allowed {
+					accessDeniedMessage(update.EditedMessage.Chat.ID)
+					break
+				}
 				chatID := update.EditedMessage.Chat.ID
 				msgID := update.EditedMessage.MessageID
 				if tpl, ok := s.GetTemplateBySource(s.MessagePtr{ChatID: chatID, MessageID: msgID}); ok {
@@ -47,11 +55,14 @@ func main() {
 				break
 			}
 			if update.Message == nil {
-				continue
+				break
+			}
+			if allowed := checkAccess(update.Message); !allowed {
+				accessDeniedMessage(update.Message.Chat.ID)
+				break
 			}
 			chatID := update.Message.Chat.ID
 			hdl := transition(update.Message)
-			// username := update.Message.From.UserName
 			var r cmd.Replier
 			transition, r, sync = hdl.Handle()
 			reply := r.Reply(bot)
@@ -63,6 +74,22 @@ func main() {
 		}
 	}
 
+}
+
+func checkAccess(message *t.Message) bool {
+	username := message.From.UserName
+	for _, admin := range config.Admins {
+		if username == admin {
+			return true
+		}
+	}
+	return false
+}
+
+func accessDeniedMessage(chatID int64) {
+	msg := t.NewMessage(chatID, "Я с тобой не разговариваю, обратись к админам.")
+	msg.ParseMode = "markdown"
+	bot.Send(msg)
 }
 
 type synchronizer struct {
