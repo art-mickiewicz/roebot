@@ -3,6 +3,7 @@ package richtext
 import (
 	"19u4n4/roebot/richtext/style"
 	"fmt"
+	"unicode/utf16"
 
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -33,27 +34,40 @@ func (e Entity) String() string {
 	}
 }
 
+func min(a int, b int) int {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
+}
+
 func MessageToEntities(msg *t.Message) []Entity {
-	runes := []rune(msg.Text)
+	u16s := utf16.Encode([]rune(msg.Text))
+	u16len := len(u16s)
 	meLen := len(*msg.Entities)
-	fmt.Println("LENGTH OF ENTITIES", meLen)
 	ret := make([]Entity, 0, 2*meLen+1)
 	cursor := 0
 	for _, me := range *msg.Entities {
+		fmt.Println(me.Offset, me.Length)
 		if cursor < me.Offset {
-			ent := Entity{Style: style.Plain, Text: string(runes[cursor:me.Offset])}
+			upTo := min(me.Offset, u16len)
+			ent := Entity{
+				Style: style.Plain,
+				Text:  string(utf16.Decode(u16s[cursor:upTo])),
+			}
 			ret = append(ret, ent)
 		}
+		upTo := min(me.Offset+me.Length, u16len)
 		ent := Entity{
 			Style: style.FromType(me.Type),
-			Text:  string(runes[me.Offset : me.Offset+me.Length]),
+			Text:  string(utf16.Decode(u16s[me.Offset:upTo])),
 		}
 		ret = append(ret, ent)
 		cursor = me.Offset + me.Length
 	}
-	runelen := len(runes)
-	if cursor < runelen {
-		ent := Entity{Style: style.Plain, Text: string(runes[cursor:runelen])}
+	if cursor < u16len {
+		ent := Entity{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:u16len]))}
 		ret = append(ret, ent)
 	}
 	return ret
