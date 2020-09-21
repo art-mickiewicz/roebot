@@ -1,6 +1,7 @@
 package commands
 
 import (
+	rich "19u4n4/roebot/richtext"
 	srv "19u4n4/roebot/services"
 	s "19u4n4/roebot/state"
 	u "19u4n4/roebot/util"
@@ -116,7 +117,7 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 	sync = false
 	if cmd.TemplateID > 0 {
 		if tpl, ok := s.GetTemplateByID(cmd.TemplateID); ok {
-			tpl.Text = cmd.Message.Text
+			tpl.Text = rich.MessageToHTML(cmd.Message)
 			if ok := s.SetTemplate(tpl); ok {
 				r = str("Шаблон установлен")
 				sync = true
@@ -128,7 +129,7 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 		}
 	} else {
 		srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
-		tpl := s.NewTemplate(cmd.TargetChannel, srcPtr, cmd.Message.Text)
+		tpl := s.NewTemplate(cmd.TargetChannel, srcPtr, rich.MessageToHTML(cmd.Message))
 		if cmd.MessageID > 0 {
 			tpl.TargetMessagePtr = s.MessagePtr{ChatID: 0, MessageID: cmd.MessageID}
 		}

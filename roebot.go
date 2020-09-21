@@ -5,6 +5,7 @@ import (
 
 	cmd "19u4n4/roebot/commands"
 	"19u4n4/roebot/config"
+	rich "19u4n4/roebot/richtext"
 	srv "19u4n4/roebot/services"
 	_ "19u4n4/roebot/services/binance"
 	_ "19u4n4/roebot/services/cbr"
@@ -50,7 +51,7 @@ func main() {
 				chatID := update.EditedMessage.Chat.ID
 				msgID := update.EditedMessage.MessageID
 				if tpl, ok := s.GetTemplateBySource(s.MessagePtr{ChatID: chatID, MessageID: msgID}); ok {
-					tpl.Text = update.EditedMessage.Text
+					tpl.Text = rich.MessageToHTML(update.EditedMessage)
 					if ok := s.SetTemplate(tpl); ok {
 						sync = true
 					} else {
