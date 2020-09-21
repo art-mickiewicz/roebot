@@ -135,11 +135,17 @@ func LoadTemplates() {
 
 func PersistChat(chat Chat, update bool) {
 	if update {
-		db.Exec("UPDATE chats SET username = ?, title = ? WHERE id = ?",
+		_, err := db.Exec("UPDATE chats SET username = ?, title = ? WHERE id = ?",
 			chat.Username, chat.Title, chat.ID)
+		if err != nil {
+			log.Println(err)
+		}
 	} else {
-		db.Exec("INSERT INTO chats (id, username, title) VALUES (?, ?, ?)",
+		_, err := db.Exec("INSERT INTO chats (id, username, title) VALUES (?, ?, ?)",
 			chat.ID, chat.Username, chat.Title)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 

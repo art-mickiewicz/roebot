@@ -146,9 +146,9 @@ func cmdTemplateList() str {
 		return "Список шаблонов пуст."
 	}
 
-	maxChNameLen := 0
+	maxChNameLen := len([]rune("Канал"))
 	for _, tpl := range s.GetTemplates() {
-		l := len(tpl.PrettyTarget())
+		l := len([]rune(tpl.PrettyTarget()))
 		if l > maxChNameLen {
 			maxChNameLen = l
 		}
@@ -196,11 +196,11 @@ func cmdChats() str {
 		return "Список чатов пуст."
 	}
 
-	maxChUsernameLen := 0
-	maxChTitleLen := 0
+	maxChUsernameLen := len([]rune("Пользователь"))
+	maxChTitleLen := len([]rune("Заголовок"))
 	for _, ch := range s.GetChats() {
-		ul := len(ch.Username)
-		tl := len(ch.Title)
+		ul := len([]rune(ch.Username))
+		tl := len([]rune(ch.Title))
 		if ul > maxChUsernameLen {
 			maxChUsernameLen = ul
 		}
@@ -209,8 +209,8 @@ func cmdChats() str {
 		}
 	}
 
-	idCh := u.PadLine("ID", 10, " ")
-	idLine := u.PadLine("", 10, "=")
+	idCh := u.PadLine("ID", 16, " ")
+	idLine := u.PadLine("", 16, "=")
 	userCh := u.PadLine("Пользователь", maxChUsernameLen, " ")
 	userLine := u.PadLine("", maxChUsernameLen, "=")
 	titleCh := u.PadLine("Заголовок", maxChTitleLen, " ")
