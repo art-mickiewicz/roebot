@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"log"
+	"strconv"
 
 	cmd "19u4n4/roebot/commands"
 	"19u4n4/roebot/config"
@@ -113,11 +115,26 @@ func getChatByID(id int64) (t.Chat, error) {
 	return bot.GetChat(t.ChatConfig{ChatID: id})
 }
 
+func getChat(addr string) (t.Chat, error) {
+	if len(addr) == 0 {
+		return t.Chat{}, errors.New("No channel address specified")
+	}
+	if addr[0] == '@' {
+		return getChatByName(addr)
+	} else {
+		chId, err := strconv.ParseInt(addr, 10, 64)
+		if err != nil {
+			return t.Chat{}, errors.New("Malformed channel address")
+		}
+		return getChatByID(chId)
+	}
+}
+
 func pushTemplates() {
 	for _, tpl := range s.GetTemplates() {
 		if tpl.IsPosted() {
 			if tpl.TargetMessagePtr.ChatID == 0 {
-				chat, err := getChatByName(tpl.TargetChannel)
+				chat, err := getChat(tpl.TargetChannel)
 				if err != nil {
 					log.Println(err)
 					continue
@@ -135,7 +152,7 @@ func pushTemplates() {
 			edit.ParseMode = "html"
 			bot.Send(edit)
 		} else {
-			chat, err := getChatByName(tpl.TargetChannel)
+			chat, err := getChat(tpl.TargetChannel)
 			if err != nil {
 				log.Println(err)
 				continue
