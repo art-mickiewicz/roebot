@@ -138,6 +138,7 @@ func pushTemplates() {
 				continue
 			}
 			msg := t.NewMessage(chat.ID, tpl.Apply(srv.GetVariablesValues()))
+			msg.ParseMode = "html"
 			postedMsg, err := bot.Send(msg)
 			if err == nil {
 				tpl.TargetMessagePtr = s.MessagePtr{ChatID: chat.ID, MessageID: postedMsg.MessageID}
