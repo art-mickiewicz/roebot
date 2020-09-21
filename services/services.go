@@ -2,15 +2,22 @@ package services
 
 import (
 	"fmt"
+
+	c "github.com/robfig/cron/v3"
 )
 
 var variables = make(map[string]Variable)
 var services = make(map[string]func())
+var cron *c.Cron
 
 type Variable struct {
 	Name        string
 	Value       string
 	Description string
+}
+
+func init() {
+	cron = c.New()
 }
 
 func RegisterVariable(name string, description string) {
@@ -43,7 +50,10 @@ func SetValue(key string, val string) bool {
 	}
 }
 
-func RegisterService(name string, synchronizer func()) {
+func RegisterService(name string, cronspec string, synchronizer func()) {
+	if len(cronspec) > 0 {
+		cron.AddFunc(cronspec, synchronizer)
+	}
 	services[name] = synchronizer
 }
 
@@ -51,4 +61,12 @@ func SyncAll() {
 	for _, srv := range services {
 		srv()
 	}
+}
+
+func StartCron() {
+	cron.Start()
+}
+
+func StopCron() {
+	cron.Stop()
 }

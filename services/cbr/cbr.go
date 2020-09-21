@@ -16,7 +16,7 @@ func init() {
 	srv.RegisterVariable("cbr_eurrub", "курс евро к рублю")
 	srv.RegisterVariable("cbr_cnyrub", "курс китайского юаня к рублю")
 	srv.RegisterVariable("cbr_gbprub", "курс фунта стерлингов к рублю")
-	srv.RegisterService("cbr", SyncCBR)
+	srv.RegisterService("cbr", "@hourly", SyncCBR)
 }
 
 func SyncCBR() {

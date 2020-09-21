@@ -15,7 +15,7 @@ func init() {
 	srv.RegisterVariable("binance_ethusdt", "ETH / USDT")
 	srv.RegisterVariable("binance_bchusdt", "ВСН / USDT")
 	srv.RegisterVariable("binance_usdtrub", "USDT / RUB")
-	srv.RegisterService("binance", SyncBinance)
+	srv.RegisterService("binance", "@hourly", SyncBinance)
 }
 
 func SyncBinance() {
