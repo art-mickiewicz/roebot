@@ -53,7 +53,7 @@ func main() {
 						sync = true
 					} else {
 						msg := t.NewMessage(chatID, "Ошибка в шаблоне.")
-						msg.ParseMode = "html"
+						msg.ParseMode = "markdown"
 						bot.Send(msg)
 					}
 				}
@@ -73,7 +73,7 @@ func main() {
 			reply := r.Reply(bot)
 			if reply != "" {
 				msg := t.NewMessage(chatID, reply)
-				msg.ParseMode = "html"
+				msg.ParseMode = "markdown"
 				bot.Send(msg)
 			}
 		}
@@ -93,7 +93,7 @@ func checkAccess(message *t.Message) bool {
 
 func accessDeniedMessage(chatID int64) {
 	msg := t.NewMessage(chatID, "Я с тобой не разговариваю, обратись к админам.")
-	msg.ParseMode = "html"
+	msg.ParseMode = "markdown"
 	bot.Send(msg)
 }
 
@@ -131,7 +131,7 @@ func (sync synchronizer) pushTemplates() {
 				},
 				Text: tpl.Apply(srv.GetVariablesValues()),
 			}
-			edit.ParseMode = "html"
+			edit.ParseMode = "markdown"
 			sync.bot.Send(edit)
 		} else {
 			chat, err := sync.getChatByName(tpl.TargetChannel)
