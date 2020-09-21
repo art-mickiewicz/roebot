@@ -29,7 +29,7 @@ func main() {
 		log.Panic(err)
 	}
 	s.LoadTemplates()
-	srv.SyncAll()
+	go srv.SyncAll()
 
 	transition := cmd.DefaultTransition
 	sync := false
