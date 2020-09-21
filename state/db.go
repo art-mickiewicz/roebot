@@ -121,6 +121,9 @@ func LoadTemplates() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		templates[tpl.ID] = tpl
+		tpl, err = parseTemplate(tpl)
+		if err == nil {
+			templates[tpl.ID] = tpl
+		}
 	}
 }

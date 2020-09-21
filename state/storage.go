@@ -1,5 +1,10 @@
 package state
 
+import (
+	"strconv"
+	"text/template"
+)
+
 //var templates = make([]Template, 0, 10)
 var templates = make(map[int]Template)
 var staging = make(map[int]State)
@@ -97,7 +102,21 @@ func setStateForID(id int, state State) {
 	staging[id] = newState
 }
 
-func SetTemplate(tpl Template) {
+func parseTemplate(tpl Template) (Template, error) {
+	tplObj, err := template.New(strconv.Itoa(tpl.ID)).Parse(tpl.Text)
+	if err != nil {
+		return tpl, err
+	}
+	tpl.TemplateObj = tplObj
+	return tpl, nil
+}
+
+func SetTemplate(tpl Template) bool {
+	tpl, err := parseTemplate(tpl)
+	if err != nil {
+		return false
+	}
+
 	var state State
 	if _, ok := templates[tpl.ID]; ok {
 		state = Updated
@@ -106,6 +125,7 @@ func SetTemplate(tpl Template) {
 	}
 	templates[tpl.ID] = tpl
 	setStateForID(tpl.ID, state)
+	return true
 }
 
 func DeleteTemplateByID(id int) int {

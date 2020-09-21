@@ -49,8 +49,13 @@ func main() {
 				msgID := update.EditedMessage.MessageID
 				if tpl, ok := s.GetTemplateBySource(s.MessagePtr{ChatID: chatID, MessageID: msgID}); ok {
 					tpl.Text = update.EditedMessage.Text
-					s.SetTemplate(tpl)
-					sync = true
+					if ok := s.SetTemplate(tpl); ok {
+						sync = true
+					} else {
+						msg := t.NewMessage(chatID, "Ошибка в шаблоне.")
+						msg.ParseMode = "markdown"
+						bot.Send(msg)
+					}
 				}
 				break
 			}

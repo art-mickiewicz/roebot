@@ -117,9 +117,12 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 	if cmd.TemplateID > 0 {
 		if tpl, ok := s.GetTemplateByID(cmd.TemplateID); ok {
 			tpl.Text = cmd.Message.Text
-			s.SetTemplate(tpl)
-			r = str("Шаблон установлен")
-			sync = true
+			if ok := s.SetTemplate(tpl); ok {
+				r = str("Шаблон установлен")
+				sync = true
+			} else {
+				r = str("Ошибка в шаблоне.")
+			}
 		} else {
 			r = str("Шаблона с таким ID не найдено.")
 		}
@@ -129,9 +132,12 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 		if cmd.MessageID > 0 {
 			tpl.TargetMessagePtr = s.MessagePtr{ChatID: 0, MessageID: cmd.MessageID}
 		}
-		s.SetTemplate(tpl)
-		r = str("Шаблон установлен")
-		sync = true
+		if ok := s.SetTemplate(tpl); ok {
+			r = str("Шаблон установлен")
+			sync = true
+		} else {
+			r = str("Ошибка в шаблоне.")
+		}
 	}
 	return
 }

@@ -1,11 +1,16 @@
 package state
 
+import (
+	t "text/template"
+)
+
 type Template struct {
 	ID               int
 	TargetChannel    string
 	SourceMessagePtr MessagePtr
 	TargetMessagePtr MessagePtr
 	Text             string
+	TemplateObj      *t.Template
 }
 
 type MessagePtr struct {
