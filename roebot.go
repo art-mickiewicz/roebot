@@ -106,8 +106,11 @@ func Sync() {
 }
 
 func getChatByName(name string) (t.Chat, error) {
-	chName := "@" + name
-	return bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
+	return bot.GetChat(t.ChatConfig{SuperGroupUsername: name})
+}
+
+func getChatByID(id int64) (t.Chat, error) {
+	return bot.GetChat(t.ChatConfig{ChatID: id})
 }
 
 func pushTemplates() {

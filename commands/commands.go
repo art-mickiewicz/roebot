@@ -45,7 +45,7 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 		case "list":
 			r = cmdTemplateList()
 		case "add":
-			if len(args) < 1 || args[0][0] != '@' {
+			if len(args) < 1 {
 				r = str("Не указан канал для отправки шаблона первым аргументом к команде \"template add\".")
 				return
 			}
@@ -96,11 +96,11 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 			r = str(fmt.Sprintf("<pre>%s</pre>", reply))
 		}
 	case "messages":
-		if len(args) < 1 || args[0][0] != '@' {
+		if len(args) < 1 {
 			r = str("Не указан канал первым аргументом к команде \"messages\".")
 			return
 		}
-		chName := args[0][1:]
+		chName := args[0]
 		r = cmdMessages(chName)
 	}
 	return
@@ -199,8 +199,7 @@ func cmdTemplateDelete(templateID int) str {
 func cmdMessages(chName string) Replier {
 	var f funcReplier
 	f = func(bot *t.BotAPI) string {
-		name := "@" + chName
-		_, err := bot.GetChat(t.ChatConfig{SuperGroupUsername: name})
+		_, err := bot.GetChat(t.ChatConfig{SuperGroupUsername: chName})
 		if err != nil {
 			return "Канал недоступен."
 		}
