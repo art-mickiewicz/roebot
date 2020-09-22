@@ -43,9 +43,18 @@ func min(a int, b int) int {
 }
 
 func MessageToEntities(msg *t.Message) []Entity {
+	meLen := 0
+	if msg.Entities != nil {
+		meLen = len(*msg.Entities)
+	}
+	if meLen == 0 {
+		ret := make([]Entity, 1)
+		ret[0] = Entity{Style: style.Plain, Text: msg.Text}
+		return ret
+	}
+
 	u16s := utf16.Encode([]rune(msg.Text))
 	u16len := len(u16s)
-	meLen := len(*msg.Entities)
 	ret := make([]Entity, 0, 2*meLen+1)
 	cursor := 0
 	for _, me := range *msg.Entities {
