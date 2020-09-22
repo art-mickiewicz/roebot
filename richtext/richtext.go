@@ -20,7 +20,7 @@ func (e Entity) String() string {
 	case style.Bold:
 		return fmt.Sprintf("<b>%s</b>", e.Text)
 	case style.Italic:
-		return fmt.Sprintf("<i>%s</t>", e.Text)
+		return fmt.Sprintf("<i>%s</i>", e.Text)
 	case style.Underline:
 		return fmt.Sprintf("<u>%s</u>", e.Text)
 	case style.Strikethrough:
