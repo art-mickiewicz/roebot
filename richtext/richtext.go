@@ -62,15 +62,24 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 	ret := make([]Token, 0, 2*meLen+1)
 	prevCursor := lowerBound
 	cursor := lowerBound
+	skipSubtokens := false
 	for i, me := range (*msg.Entities)[index:] {
 		if cursor >= upperBound {
 			return ret
 		}
+
 		subtokens := make([]Token, 0, 5)
 		if cursor > me.Offset {
 			// trigger subtokens
-			subtokens = messageToTokens(msg, i, prevCursor, cursor)
+			if skipSubtokens {
+				continue
+			} else {
+				subtokens = messageToTokens(msg, i, prevCursor, cursor)
+			}
+		} else {
+			skipSubtokens = false
 		}
+
 		if cursor < me.Offset {
 			upTo := min(me.Offset, upperBound)
 			ent := Token{
@@ -99,7 +108,11 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 func TokensToHTML(toks []Token) string {
 	ret := ""
 	for _, tok := range toks {
-		ret += tok.String()
+		if len(tok.Subtokens) > 0 {
+			ret += TokensToHTML(tok.Subtokens)
+		} else {
+			ret += tok.String()
+		}
 	}
 	return ret
 }
