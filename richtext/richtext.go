@@ -75,6 +75,7 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 				continue
 			} else {
 				subtokens = messageToTokens(msg, i, prevCursor, cursor)
+				skipSubtokens = true
 			}
 		} else {
 			skipSubtokens = false
