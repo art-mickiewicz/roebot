@@ -43,7 +43,7 @@ func min(a int, b int) int {
 	}
 }
 
-func MessageToTokens(msg *t.Message) []Token {
+func MessageToTokens(msg *t.Message, upperBound int) []Token {
 	meLen := 0
 	if msg.Entities != nil {
 		meLen = len(*msg.Entities)
@@ -56,9 +56,15 @@ func MessageToTokens(msg *t.Message) []Token {
 
 	u16s := utf16.Encode([]rune(msg.Text))
 	u16len := len(u16s)
+	if upperBound < 0 {
+		upperBound = u16len
+	}
 	ret := make([]Token, 0, 2*meLen+1)
 	cursor := 0
 	for _, me := range *msg.Entities {
+		if cursor > me.Offset {
+			// trigger subtokens
+		}
 		if cursor < me.Offset {
 			upTo := min(me.Offset, u16len)
 			ent := Token{
@@ -67,7 +73,7 @@ func MessageToTokens(msg *t.Message) []Token {
 			}
 			ret = append(ret, ent)
 		}
-		upTo := min(me.Offset+me.Length, u16len)
+		upTo := min(me.Offset+me.Length, upperBound)
 		ent := Token{
 			Style: style.FromType(me.Type),
 			Text:  string(utf16.Decode(u16s[me.Offset:upTo])),
@@ -75,8 +81,8 @@ func MessageToTokens(msg *t.Message) []Token {
 		ret = append(ret, ent)
 		cursor = me.Offset + me.Length
 	}
-	if cursor < u16len {
-		ent := Token{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:u16len]))}
+	if cursor < upperBound {
+		ent := Token{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:upperBound]))}
 		ret = append(ret, ent)
 	}
 	return ret
@@ -91,5 +97,5 @@ func TokensToHTML(toks []Token) string {
 }
 
 func MessageToHTML(msg *t.Message) string {
-	return TokensToHTML(MessageToTokens(msg))
+	return TokensToHTML(MessageToTokens(msg, -1))
 }
