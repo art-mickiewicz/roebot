@@ -8,29 +8,30 @@ import (
 	t "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-type Entity struct {
-	Style style.Style
-	Text  string
+type Token struct {
+	Style     style.Style
+	Text      string
+	Subtokens []Token
 }
 
-func (e Entity) String() string {
-	switch e.Style {
+func (tok Token) String() string {
+	switch tok.Style {
 	case style.Plain:
-		return e.Text
+		return tok.Text
 	case style.Bold:
-		return fmt.Sprintf("<b>%s</b>", e.Text)
+		return fmt.Sprintf("<b>%s</b>", tok.Text)
 	case style.Italic:
-		return fmt.Sprintf("<i>%s</i>", e.Text)
+		return fmt.Sprintf("<i>%s</i>", tok.Text)
 	case style.Underline:
-		return fmt.Sprintf("<u>%s</u>", e.Text)
+		return fmt.Sprintf("<u>%s</u>", tok.Text)
 	case style.Strikethrough:
-		return fmt.Sprintf("<s>%s</s>", e.Text)
+		return fmt.Sprintf("<s>%s</s>", tok.Text)
 	case style.Code:
-		return fmt.Sprintf("<code>%s</code>", e.Text)
+		return fmt.Sprintf("<code>%s</code>", tok.Text)
 	case style.Pre:
-		return fmt.Sprintf("<pre>%s</pre>", e.Text)
+		return fmt.Sprintf("<pre>%s</pre>", tok.Text)
 	default:
-		return e.Text
+		return tok.Text
 	}
 }
 
@@ -42,32 +43,32 @@ func min(a int, b int) int {
 	}
 }
 
-func MessageToEntities(msg *t.Message) []Entity {
+func MessageToTokens(msg *t.Message) []Token {
 	meLen := 0
 	if msg.Entities != nil {
 		meLen = len(*msg.Entities)
 	}
 	if meLen == 0 {
-		ret := make([]Entity, 1)
-		ret[0] = Entity{Style: style.Plain, Text: msg.Text}
+		ret := make([]Token, 1)
+		ret[0] = Token{Style: style.Plain, Text: msg.Text}
 		return ret
 	}
 
 	u16s := utf16.Encode([]rune(msg.Text))
 	u16len := len(u16s)
-	ret := make([]Entity, 0, 2*meLen+1)
+	ret := make([]Token, 0, 2*meLen+1)
 	cursor := 0
 	for _, me := range *msg.Entities {
 		if cursor < me.Offset {
 			upTo := min(me.Offset, u16len)
-			ent := Entity{
+			ent := Token{
 				Style: style.Plain,
 				Text:  string(utf16.Decode(u16s[cursor:upTo])),
 			}
 			ret = append(ret, ent)
 		}
 		upTo := min(me.Offset+me.Length, u16len)
-		ent := Entity{
+		ent := Token{
 			Style: style.FromType(me.Type),
 			Text:  string(utf16.Decode(u16s[me.Offset:upTo])),
 		}
@@ -75,20 +76,20 @@ func MessageToEntities(msg *t.Message) []Entity {
 		cursor = me.Offset + me.Length
 	}
 	if cursor < u16len {
-		ent := Entity{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:u16len]))}
+		ent := Token{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:u16len]))}
 		ret = append(ret, ent)
 	}
 	return ret
 }
 
-func EntitiesToHTML(es []Entity) string {
+func TokensToHTML(toks []Token) string {
 	ret := ""
-	for _, ent := range es {
-		ret += ent.String()
+	for _, tok := range toks {
+		ret += tok.String()
 	}
 	return ret
 }
 
 func MessageToHTML(msg *t.Message) string {
-	return EntitiesToHTML(MessageToEntities(msg))
+	return TokensToHTML(MessageToTokens(msg))
 }
