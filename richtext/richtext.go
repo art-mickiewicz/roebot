@@ -63,7 +63,10 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 	prevCursor := lowerBound
 	cursor := lowerBound
 	skipSubtokens := false
+	fmt.Println(index, "LOWER", lowerBound, "UPPER", upperBound)
 	for i, me := range (*msg.Entities)[index:] {
+		fmt.Println("ENTITY", me.Type, me.Offset, me.Length)
+		fmt.Println(index, "CURSOR", cursor, "OFFSET", me.Offset)
 		if cursor >= upperBound {
 			return ret
 		}
@@ -72,8 +75,10 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 		if cursor > me.Offset {
 			// trigger subtokens
 			if skipSubtokens {
+				fmt.Println(index, "SKIP SUBTOKEN")
 				continue
 			} else {
+				fmt.Println(index, "--- SCAN SUBTOKENS ---")
 				subtokens = messageToTokens(msg, i, prevCursor, cursor)
 				skipSubtokens = true
 			}
@@ -103,6 +108,7 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 		ent := Token{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:upperBound]))}
 		ret = append(ret, ent)
 	}
+	fmt.Println(ret)
 	return ret
 }
 
