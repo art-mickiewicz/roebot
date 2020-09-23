@@ -21,19 +21,29 @@ func init() {
 	printer = message.NewPrinter(language.Russian)
 	srv.RegisterVariable("binance_btc", "BTC / RUB")
 	srv.RegisterVariable("binance_eth", "ETH / RUB")
-	srv.RegisterVariable("binance_bchusdt", "ВСН / USDT")
+	srv.RegisterVariable("binance_bch", "ВСН / RUB")
 	srv.RegisterVariable("binance_usdt", "USDT / RUB")
 	srv.RegisterService("binance", "@hourly", SyncBinance)
 }
 
 func formatValue(v string) string {
 	fv, _ := strconv.ParseFloat(v, 64)
+	return formatFloatValue(fv)
+}
+
+func formatFloatValue(fv float64) string {
 	return printer.Sprintf("%v", n.Decimal(
 		fv,
 		n.Scale(2),
 		n.Pad(' '),
 		n.FormatWidth(10),
 	))
+}
+
+func getBCHRUB(bchbtc string, btcrub string) float64 {
+	fbchbtc, _ := strconv.ParseFloat(bchbtc, 64)
+	fbtcrub, _ := strconv.ParseFloat(btcrub, 64)
+	return fbchbtc * fbtcrub
 }
 
 func SyncBinance() {
@@ -62,7 +72,7 @@ func SyncBinance() {
 	}
 	srv.SetValue("binance_btc", formatValue(symbolsMap["BTCRUB"]))
 	srv.SetValue("binance_eth", formatValue(symbolsMap["ETHRUB"]))
-	srv.SetValue("binance_bchusdt", formatValue(symbolsMap["BCHUSDT"]))
+	srv.SetValue("binance_bch", formatFloatValue(getBCHRUB(symbolsMap["BCHBTC"], symbolsMap["BTCRUB"])))
 	srv.SetValue("binance_usdt", formatValue(symbolsMap["USDTRUB"]))
 	srv.Commit()
 }

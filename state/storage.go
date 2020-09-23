@@ -140,7 +140,7 @@ func setStateForID(id int, state State) {
 }
 
 func parseTemplate(tpl Template) (Template, error) {
-	tplObj, err := template.New(strconv.Itoa(tpl.ID)).Parse(tpl.Text)
+	tplObj, err := template.New(strconv.Itoa(tpl.ID)).Option("missingkey=zero").Parse(tpl.Text)
 	if err != nil {
 		return tpl, err
 	}

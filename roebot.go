@@ -137,6 +137,7 @@ func getChat(addr string) (t.Chat, error) {
 }
 
 func pushTemplates() {
+	log.Println("Push templates")
 	for _, tpl := range s.GetTemplates() {
 		if tpl.IsPosted() {
 			if tpl.TargetMessagePtr.ChatID == 0 {
@@ -156,7 +157,9 @@ func pushTemplates() {
 				Text: tpl.Apply(srv.GetVariablesValues()),
 			}
 			edit.ParseMode = "html"
-			bot.Send(edit)
+			if _, err := bot.Send(edit); err != nil {
+				log.Println("Message edit error:", err)
+			}
 		} else {
 			chat, err := getChat(tpl.TargetChannel)
 			if err != nil {
@@ -169,6 +172,8 @@ func pushTemplates() {
 			if err == nil {
 				tpl.TargetMessagePtr = s.MessagePtr{ChatID: chat.ID, MessageID: postedMsg.MessageID}
 				s.SetTemplate(tpl)
+			} else {
+				log.Println("Message add error:", err)
 			}
 		}
 	}
