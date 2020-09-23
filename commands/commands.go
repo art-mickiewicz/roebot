@@ -121,8 +121,10 @@ type SetTemplate struct {
 func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 	transitTo = DefaultTransition
 	sync = false
+	srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
 	if cmd.TemplateID > 0 {
 		if tpl, ok := s.GetTemplateByID(cmd.TemplateID); ok {
+			tpl.SourceMessagePtr = srcPtr
 			tpl.Text = rich.MessageToHTML(cmd.Message)
 			if ok := s.SetTemplate(tpl); ok {
 				r = str("Шаблон установлен")
@@ -134,7 +136,6 @@ func (cmd SetTemplate) Handle() (transitTo Transition, r Replier, sync bool) {
 			r = str("Шаблона с таким ID не найдено.")
 		}
 	} else {
-		srcPtr := s.MessagePtr{ChatID: cmd.Message.Chat.ID, MessageID: cmd.Message.MessageID}
 		tpl := s.NewTemplate(cmd.TargetChannel, srcPtr, rich.MessageToHTML(cmd.Message))
 		if cmd.MessageID > 0 {
 			tpl.TargetMessagePtr = s.MessagePtr{ChatID: 0, MessageID: cmd.MessageID}
