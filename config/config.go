@@ -10,6 +10,7 @@ import (
 var Config = ConfigSpec{}
 
 type ConfigSpec struct {
+	Token  string
 	Admins []string
 }
 

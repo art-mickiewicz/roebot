@@ -20,7 +20,7 @@ var bot *t.BotAPI
 
 func main() {
 	var err error
-	bot, err = t.NewBotAPI("1185985324:AAHuOeP1g9PGgd_cuJno40uGAaKH_nWx0Ew")
+	bot, err = t.NewBotAPI(cfg.Config.Token)
 	if err != nil {
 		log.Panic(err)
 	}
