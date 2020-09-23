@@ -3,7 +3,7 @@ package commands
 import "fmt"
 
 var Help = map[string]string{
-	"help [COMMAND]": "help - список команд",
+	"help [COMMAND]": "help [COMMAND] - список команд",
 	"template":       "template { list | add | edit | delete } - работа с шаблонами",
 	"variables":      "variables - список переменных для шаблона",
 	"chats":          "chats - список известных чатов",
