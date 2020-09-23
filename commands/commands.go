@@ -75,6 +75,16 @@ func (cmd Zero) Handle() (transitTo Transition, r Replier, sync bool) {
 			} else {
 				r = str("Неверный тип аргумента ID шаблона.")
 			}
+		case "show":
+			if len(args) < 1 {
+				r = str("Не указан ID шаблона для редактирования первым аргументом к команде \"template delete\".")
+				return
+			}
+			if chID, err := strconv.Atoi(args[0]); err == nil {
+				r = cmdTemplateShow(chID)
+			} else {
+				r = str("Неверный тип аргумента ID шаблона.")
+			}
 		}
 	case "help", "start":
 		if len(args) < 1 {
@@ -186,6 +196,14 @@ func cmdTemplateDelete(templateID int) str {
 	deleted := s.DeleteTemplateByID(templateID)
 	if deleted > 0 {
 		return "Удалено."
+	} else {
+		return "Шаблона с таким ID не найдено."
+	}
+}
+
+func cmdTemplateShow(templateID int) str {
+	if tpl, ok := s.GetTemplateByID(templateID); ok {
+		return str(tpl.Text)
 	} else {
 		return "Шаблона с таким ID не найдено."
 	}

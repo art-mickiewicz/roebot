@@ -4,7 +4,7 @@ import "fmt"
 
 var Help = map[string]string{
 	"help [COMMAND]": "help [COMMAND] - список команд",
-	"template":       "template { list | add | edit | delete } - работа с шаблонами",
+	"template":       "template { list | add | edit | delete | show } - работа с шаблонами",
 	"variables":      "variables - список переменных для шаблона",
 	"chats":          "chats - список известных чатов",
 }
@@ -15,6 +15,7 @@ var FullHelp = map[string]string{
 		add CHANNEL [MSGID] - добавить шаблон для канала CHANNEL и сообщения MSGID (или нового сообщения)
 		edit TEMPLATE_ID - ввести новую версию шаблона
 		delete TEMPLATE_ID - удалить шаблон
+		show TEMPLATE_ID - отправить текст шаблона в этот чат
 	`,
 }
 
