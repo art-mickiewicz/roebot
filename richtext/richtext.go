@@ -14,25 +14,29 @@ type Token struct {
 	Subtokens []Token
 }
 
-func (tok Token) String() string {
+func (tok Token) tagWrap(text string) string {
 	switch tok.Style {
 	case style.Plain:
 		return tok.Text
 	case style.Bold:
-		return fmt.Sprintf("<b>%s</b>", tok.Text)
+		return fmt.Sprintf("<b>%s</b>", text)
 	case style.Italic:
-		return fmt.Sprintf("<i>%s</i>", tok.Text)
+		return fmt.Sprintf("<i>%s</i>", text)
 	case style.Underline:
-		return fmt.Sprintf("<u>%s</u>", tok.Text)
+		return fmt.Sprintf("<u>%s</u>", text)
 	case style.Strikethrough:
-		return fmt.Sprintf("<s>%s</s>", tok.Text)
+		return fmt.Sprintf("<s>%s</s>", text)
 	case style.Code:
-		return fmt.Sprintf("<code>%s</code>", tok.Text)
+		return fmt.Sprintf("<code>%s</code>", text)
 	case style.Pre:
-		return fmt.Sprintf("<pre>%s</pre>", tok.Text)
+		return fmt.Sprintf("<pre>%s</pre>", text)
 	default:
-		return tok.Text
+		return text
 	}
+}
+
+func (tok Token) String() string {
+	return tok.tagWrap(tok.Text)
 }
 
 func min(a int, b int) int {
@@ -63,52 +67,59 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 	prevCursor := lowerBound
 	cursor := lowerBound
 	skipSubtokens := false
-	fmt.Println(index, "LOWER", lowerBound, "UPPER", upperBound)
+	tokCount := 0
+	// fmt.Println(index, "LOWER", lowerBound, "UPPER", upperBound)
 	for i, me := range (*msg.Entities)[index:] {
-		fmt.Println("ENTITY", me.Type, me.Offset, me.Length)
-		fmt.Println(index, "CURSOR", cursor, "OFFSET", me.Offset)
+		// fmt.Println("ENTITY", me.Type, me.Offset, me.Length, "CURSOR", cursor)
 		if cursor >= upperBound {
 			return ret
 		}
 
-		subtokens := make([]Token, 0, 5)
+		/* Trigger subtokens */
 		if cursor > me.Offset {
-			// trigger subtokens
-			if skipSubtokens {
-				fmt.Println(index, "SKIP SUBTOKEN")
-				continue
-			} else {
-				fmt.Println(index, "--- SCAN SUBTOKENS ---")
-				subtokens = messageToTokens(msg, i, prevCursor, cursor)
+			if !skipSubtokens {
+				// fmt.Println("@ SUBTOKENS @")
+				ret[tokCount-1].Subtokens = messageToTokens(msg, i, prevCursor, cursor)
 				skipSubtokens = true
+
 			}
+			continue
 		} else {
 			skipSubtokens = false
 		}
 
+		/* Add plain token before entity */
 		if cursor < me.Offset {
 			upTo := min(me.Offset, upperBound)
-			ent := Token{
+			tok := Token{
 				Style: style.Plain,
 				Text:  string(utf16.Decode(u16s[cursor:upTo])),
 			}
-			ret = append(ret, ent)
+			ret = append(ret, tok)
+			// fmt.Println("@ TOKEN PLAIN:", tok.Text)
+			tokCount++
+			cursor = me.Offset
 		}
+
+		/* Token from entity */
 		upTo := min(me.Offset+me.Length, upperBound)
-		ent := Token{
-			Style:     style.FromType(me.Type),
-			Text:      string(utf16.Decode(u16s[me.Offset:upTo])),
-			Subtokens: subtokens,
+		tok := Token{
+			Style: style.FromType(me.Type),
+			Text:  string(utf16.Decode(u16s[cursor:upTo])),
 		}
-		ret = append(ret, ent)
+		ret = append(ret, tok)
+		// fmt.Println("@ TOKEN "+me.Type+":", tok.Text)
+		tokCount++
+
 		prevCursor = cursor
 		cursor = me.Offset + me.Length
 	}
 	if cursor < upperBound {
-		ent := Token{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:upperBound]))}
-		ret = append(ret, ent)
+		tok := Token{Style: style.Plain, Text: string(utf16.Decode(u16s[cursor:upperBound]))}
+		ret = append(ret, tok)
+		tokCount++
 	}
-	fmt.Println(ret)
+	// fmt.Println("RETURN", index, ret)
 	return ret
 }
 
@@ -116,7 +127,7 @@ func TokensToHTML(toks []Token) string {
 	ret := ""
 	for _, tok := range toks {
 		if len(tok.Subtokens) > 0 {
-			ret += TokensToHTML(tok.Subtokens)
+			ret += tok.tagWrap(TokensToHTML(tok.Subtokens))
 		} else {
 			ret += tok.String()
 		}
