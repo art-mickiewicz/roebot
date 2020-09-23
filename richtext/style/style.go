@@ -10,6 +10,7 @@ const (
 	Strikethrough Style = 40
 	Code          Style = 50
 	Pre           Style = 60
+	Link          Style = 70
 )
 
 func FromType(t string) Style {
@@ -28,4 +29,7 @@ var typeMap = map[string]Style{
 	"strikethrough": Strikethrough,
 	"code":          Code,
 	"pre":           Pre,
+	"url":           Link,
+	"text_link":     Link,
+	"text_mention":  Link,
 }

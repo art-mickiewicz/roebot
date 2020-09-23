@@ -1,5 +1,19 @@
 package richtext
 
+/** Supported HTML subset
+ *
+ * <b>bold</b>, <strong>bold</strong>
+ * <i>italic</i>, <em>italic</em>
+ * <u>underline</u>, <ins>underline</ins>
+ * <s>strikethrough</s>, <strike>strikethrough</strike>, <del>strikethrough</del>
+ * <b>bold <i>italic bold <s>italic bold strikethrough</s> <u>underline italic bold</u></i> bold</b>
+ * <a href="http://www.example.com/">inline URL</a>
+ * <a href="tg://user?id=123456789">inline mention of a user</a>
+ * <code>inline fixed-width code</code>
+ * <pre>pre-formatted fixed-width code block</pre>
+ * <pre><code class="language-python">pre-formatted fixed-width code block written in the Python programming language</code></pre>
+ */
+
 import (
 	"19u4n4/roebot/richtext/style"
 	"fmt"
@@ -11,6 +25,7 @@ import (
 type Token struct {
 	Style     style.Style
 	Text      string
+	URL       string
 	Subtokens []Token
 }
 
@@ -30,6 +45,8 @@ func (tok Token) tagWrap(text string) string {
 		return fmt.Sprintf("<code>%s</code>", text)
 	case style.Pre:
 		return fmt.Sprintf("<pre>%s</pre>", text)
+	case style.Link:
+		return fmt.Sprintf("<a href=\"%s\">%s</a>", tok.URL, text)
 	default:
 		return text
 	}
@@ -106,6 +123,7 @@ func messageToTokens(msg *t.Message, index int, lowerBound int, upperBound int) 
 		tok := Token{
 			Style: style.FromType(me.Type),
 			Text:  string(utf16.Decode(u16s[cursor:upTo])),
+			URL:   me.URL,
 		}
 		ret = append(ret, tok)
 		// fmt.Println("@ TOKEN "+me.Type+":", tok.Text)
