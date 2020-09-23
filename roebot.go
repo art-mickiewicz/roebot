@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	cmd "19u4n4/roebot/commands"
-	"19u4n4/roebot/config"
+	cfg "19u4n4/roebot/config"
 	rich "19u4n4/roebot/richtext"
 	srv "19u4n4/roebot/services"
 	_ "19u4n4/roebot/services/binance"
@@ -94,7 +94,7 @@ func main() {
 
 func checkAccess(message *t.Message) bool {
 	username := message.From.UserName
-	for _, admin := range config.Admins {
+	for _, admin := range cfg.Config.Admins {
 		if username == admin {
 			return true
 		}

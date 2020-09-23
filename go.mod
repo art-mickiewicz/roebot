@@ -10,5 +10,6 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	golang.org/x/text v0.3.3
+	gopkg.in/yaml.v2 v2.3.0
 	robpike.io/filter v0.0.0-20150108201509-2984852a2183
 )
