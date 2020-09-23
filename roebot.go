@@ -22,7 +22,7 @@ func main() {
 	var err error
 	bot, err = t.NewBotAPI(cfg.Config.Token)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	//bot.Debug = true
 	log.Printf("Connected %s", bot.Self.UserName)
